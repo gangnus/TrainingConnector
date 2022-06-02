@@ -10,8 +10,6 @@ public class DaktelaSchema {
 
     public static final ObjectClass CLASS_USER = new ObjectClass("user");
 
-    public static final String ATTR_USERID = "userId";
-    public static final String ATTR_USERNAME = "userName";
     public static final String ATTR_FIRSTNAME = "firstname";
     public static final String ATTR_LASTNAME = "lastname";
 

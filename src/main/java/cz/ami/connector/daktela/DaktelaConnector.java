@@ -3,6 +3,7 @@ package cz.ami.connector.daktela;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.Filter;
 import org.identityconnectors.framework.common.objects.filter.FilterTranslator;
@@ -61,8 +62,8 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
     }
 
     @Override
-    public FilterTranslator<Filter> createFilterTranslator(ObjectClass objectClass, OperationOptions operationOptions) {
-        return null;
+    public FilterTranslator<Filter> createFilterTranslator(ObjectClass objectClass, OperationOptions options) {
+        return CollectionUtil::newList;
     }
 
     @Override
@@ -83,7 +84,7 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
             cob.setName("tomas.mraz");
             cob.addAttribute(DaktelaSchema.ATTR_FIRSTNAME,"Tomas");
             cob.addAttribute(DaktelaSchema.ATTR_LASTNAME, "Mraz");
-                        
+
             resultsHandler.handle(cob.build());
         }
     }
