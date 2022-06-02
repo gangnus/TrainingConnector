@@ -1,0 +1,12 @@
+# java build artifacts
+*.class
+*.jar
+*.war
+*.bat
+
+# maven build target
+**/target
+
+# idea files
+.idea
+*.iml

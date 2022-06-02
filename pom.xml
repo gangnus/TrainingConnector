@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2021 AMI Praha a.s.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>connector-daktela</artifactId>
+    <groupId>cz.ami</groupId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <name>Daktela Connector</name>
+
+    <properties>
+        <connectorPackage>cz.ami.connector.daktela</connectorPackage>
+        <connectorClass>DaktelaConnector</connectorClass>
+        <bundle.name>${project.groupId}.${project.artifactId}</bundle.name>
+        <bundle.version>${project.version}</bundle.version>
+        <project.source.version>11</project.source.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <connId.version>1.5.0.18</connId.version>
+        <midpoint.version>4.4.1</midpoint.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>evolveum-nexus-releases</id>
+            <name>Internal Releases</name>
+            <url>https://nexus.evolveum.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>evolveum-nexus-snapshots</id>
+            <name>Internal Releases</name>
+            <url>https://nexus.evolveum.com/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>apache-snapshots</id>
+            <name>Apache Snapshots</name>
+            <url>https://repository.apache.org/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>${project.source.version}</source>
+                    <target>${project.source.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-assembly-plugin</artifactId>
+               <version>3.3.0</version>
+               <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <descriptors>
+                     <descriptor>src/main/assembly/connector.xml</descriptor>
+                  </descriptors>
+                  <archive>
+                     <index>true</index>
+                     <manifestEntries>
+                        <ConnectorBundle-FrameworkVersion>${connId.version}</ConnectorBundle-FrameworkVersion>
+                        <ConnectorBundle-Name>${bundle.name}</ConnectorBundle-Name>
+                        <ConnectorBundle-Version>${bundle.version}</ConnectorBundle-Version>
+                     </manifestEntries>
+                  </archive>
+               </configuration>
+               <executions>
+                  <execution>
+                     <id>make-assembly</id>
+                     <phase>package</phase>
+                     <goals>
+                        <goal>single</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>com.evolveum.commons</groupId>
+            <artifactId>util</artifactId>
+            <version>${midpoint.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.tirasa.connid</groupId>
+            <artifactId>connector-framework</artifactId>
+            <version>${connId.version}</version>
+		    <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.7</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>
