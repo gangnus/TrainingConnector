@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,17 +101,39 @@ public class DaktelaUser extends DaktelaItem implements Create, Update, Delete{
 
 
     @Override
-    public void createFarRecord() {
+    public void createFarRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
+        String jsonString = gson.toJson(this);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
+                .timeout(Duration.of(timeout, SECONDS))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)))
+                .build();
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    @Override
+    public void deleteFarRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(uriSource+ API_V_6_USERS + "/" + name + DOT_JSON))
+                .timeout(Duration.of(timeout, SECONDS))
+                .DELETE()
+                .build();
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
 
     }
 
     @Override
-    public void deleteFarRecord() {
-
-    }
-
-    @Override
-    public void updateFarRecord() {
-
+    public void updateFarRecord(HttpClient client, Integer timeout) throws IOException, InterruptedException, URISyntaxException {
+        String jsonString = gson.toJson(this);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(uriSource+ API_V_6_USERS + "/" + name + DOT_JSON))
+                .timeout(Duration.of(timeout, SECONDS))
+                .headers("name", name)
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)))
+                .build();
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }
