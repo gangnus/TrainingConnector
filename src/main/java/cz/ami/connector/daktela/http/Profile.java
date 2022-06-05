@@ -1,6 +1,6 @@
 package cz.ami.connector.daktela.http;
 
-public class DaktelaProfile {
+public class Profile {
     private String name;
     private String title;
     private String description;
