@@ -5,5 +5,5 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 
 public interface Update {
-    void updateFarRecord(HttpClient client, Integer timeout) throws IOException, InterruptedException, URISyntaxException;
+    void updateRecord(HttpClient client, Integer timeout) throws IOException, InterruptedException, URISyntaxException;
 }

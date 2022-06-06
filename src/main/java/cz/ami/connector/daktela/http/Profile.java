@@ -1,5 +1,8 @@
 package cz.ami.connector.daktela.http;
 
+import lombok.Data;
+
+@Data
 public class Profile {
     private String name;
     private String title;

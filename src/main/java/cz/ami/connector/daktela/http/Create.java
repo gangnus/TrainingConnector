@@ -5,5 +5,5 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 
 public interface Create {
-    void createFarRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException;
+    void createRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException;
 }

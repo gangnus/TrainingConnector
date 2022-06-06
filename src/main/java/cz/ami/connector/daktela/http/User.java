@@ -1,11 +1,15 @@
 package cz.ami.connector.daktela.http;
 
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import cz.ami.connector.daktela.DaktelaConnector;
 import lombok.Data;
 import lombok.Setter;
+import org.identityconnectors.framework.common.exceptions.ConnectorException;
 
 
 import java.io.IOException;
@@ -41,7 +45,7 @@ public class User extends Item implements Create, Update, Delete{
     private String callSteeringDescription;
     private String password;
     private String extension;
-    private RightsToCall acl;
+    private List<RightsToCall> acl;
     //TODO If we have to use the enum?
     @SerializedName("extension_state")
     private String extState;
@@ -64,81 +68,122 @@ public class User extends Item implements Create, Update, Delete{
     private Boolean deactivated;
     private Boolean deleted;
 
-    @Expose(serialize = false, deserialize = false)
-    @Setter
-    private String uriSource;
-
     static private Gson gson = new Gson();
     static private Type userListType = new TypeToken<ArrayList<User>>(){}.getType();
 
     public static final String API_V_6_USERS = "/api/v6/users";
     public static final String DOT_JSON = ".json";
+    private static final Trace LOG = TraceManager.getTrace(User.class);
 
-    static public User readAndCreate(HttpClient client, Integer timeout, String uriSource, String name) throws URISyntaxException, IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(uriSource+ API_V_6_USERS + "/" + name + DOT_JSON))
-                .timeout(Duration.of(timeout, SECONDS))
-                .headers("name", name)
-                .GET()
-                .build();
+    static public User read(HttpClient client, Integer timeout, String uriSource, String name){
+        LOG.debug("----------- before request -----------------");
+        User user = null;
+        String uriLine=uriSource+ API_V_6_USERS + "/" + name + DOT_JSON;
+        LOG.debug("uri ="+uriLine);
+        LOG.debug("timeout ="+timeout);
+
+
+        HttpRequest request = null;
+        try {
+            request = HttpRequest.newBuilder()
+                    .uri(new URI(uriLine))
+                    .timeout(Duration.of(timeout, SECONDS))
+                    .GET()
+                    .build();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new ConnectorException("--------------------- Error in URI for a user reading" + uriLine + "\n" + e.getMessage());
+        }
+        LOG.debug("------------------- a request created, but not sent yet --------------------- ");
         HttpResponse<String> response =
-                client.send(request, HttpResponse.BodyHandlers.ofString());
+                null;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ConnectorException("--------------------- IO error while reading single user " + e.getMessage());
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new ConnectorException("--------------------- interrupted while reading single user" + e.getMessage());
+        }
         String jsonString = response.body();
-        User user = gson.fromJson(jsonString, User.class);
-        user.uriSource = uriSource;
+        LOG.debug("----------- ready jsonString -----------------");
+        user = gson.fromJson(jsonString, User.class);
+        LOG.debug("----------- ready user -----------------");
+
+        LOG.debug("name="+user.getName());
+        LOG.debug("title="+user.getTitle());
+        LOG.debug("alias="+user.getAlias());
         return user;
     }
 
-    static Collection<User> fetch(HttpClient client, Integer timeout, String uriSource) throws URISyntaxException, IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
-                .timeout(Duration.of(timeout, SECONDS))
-                .GET()
-                .build();
+    public static Collection<User> readAll(HttpClient client, Integer timeout, String uriSource) {
+        HttpRequest request = null;
+        List<User> users = null;
+        String uriLine=uriSource + API_V_6_USERS + DOT_JSON;
+        try {
+            request = HttpRequest.newBuilder()
+                    .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
+                    .timeout(Duration.of(timeout, SECONDS))
+                    .GET()
+                    .build();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            throw new ConnectorException("--------------------- Error in URI for all users reading" + uriLine + "\n" + e.getMessage());
+        }
         HttpResponse<String> response =
-                client.send(request, HttpResponse.BodyHandlers.ofString());
+                null;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ConnectorException("--------------------- IO error while reading all users" + e.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new ConnectorException("--------------------- interrupted while reading all users" + e.getMessage());
+        }
         String jsonString = response.body();
 
-        List<User> users = gson.fromJson(jsonString, userListType);
+        users = gson.fromJson(jsonString, userListType);
         Item.setUriSources(uriSource, users);
         return users;
     }
 
 
     @Override
-    public void createFarRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
-        String jsonString = gson.toJson(this);
+    public void createRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
+        /*String jsonString = gson.toJson(this);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
                 .timeout(Duration.of(timeout, SECONDS))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)))
                 .build();
         HttpResponse<String> response =
-                client.send(request, HttpResponse.BodyHandlers.ofString());
+                client.send(request, HttpResponse.BodyHandlers.ofString());*/
     }
 
     @Override
-    public void deleteFarRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
+    public void deleteRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
+       /* HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(uriSource+ API_V_6_USERS + "/" + name + DOT_JSON))
                 .timeout(Duration.of(timeout, SECONDS))
                 .DELETE()
                 .build();
         HttpResponse<String> response =
-                client.send(request, HttpResponse.BodyHandlers.ofString());
+                client.send(request, HttpResponse.BodyHandlers.ofString());*/
 
     }
 
     @Override
-    public void updateFarRecord(HttpClient client, Integer timeout) throws IOException, InterruptedException, URISyntaxException {
-        String jsonString = gson.toJson(this);
+    public void updateRecord(HttpClient client, Integer timeout) throws IOException, InterruptedException, URISyntaxException {
+        /*String jsonString = gson.toJson(this);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(uriSource+ API_V_6_USERS + "/" + name + DOT_JSON))
                 .timeout(Duration.of(timeout, SECONDS))
-                .headers("name", name)
                 .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)))
                 .build();
         HttpResponse<String> response =
-                client.send(request, HttpResponse.BodyHandlers.ofString());
+                client.send(request, HttpResponse.BodyHandlers.ofString());*/
     }
 }

@@ -12,8 +12,9 @@ public class DaktelaSchema {
 
     public static final String ATTR_FIRSTNAME = "firstname";
     public static final String ATTR_LASTNAME = "lastname";
+    public static final String ATTR_ALIAS = "alias";
 
-	public static Schema getSchema() {
+    public static Schema getSchema() {
 
         final SchemaBuilder schemaBuilder = new SchemaBuilder(DaktelaConnector.class);
 
@@ -21,8 +22,8 @@ public class DaktelaSchema {
         Set<AttributeInfo> userAttributes = new HashSet<>();
         userAttributes.add(AttributeInfoBuilder.define(Uid.NAME).setCreateable(false).setUpdateable(false).setRequired(true).build());
         userAttributes.add(AttributeInfoBuilder.define(Name.NAME).setRequired(true).build());
-        userAttributes.add(AttributeInfoBuilder.define(ATTR_FIRSTNAME).build());
-        userAttributes.add(AttributeInfoBuilder.define(ATTR_LASTNAME).build());
+        //userAttributes.add(AttributeInfoBuilder.define(ATTR_FIRSTNAME).build());
+        userAttributes.add(AttributeInfoBuilder.define(ATTR_ALIAS).build());
 
         schemaBuilder.defineObjectClass(CLASS_USER.getObjectClassValue(), userAttributes);
         return schemaBuilder.build();

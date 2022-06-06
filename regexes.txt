@@ -1,3 +1,7 @@
 
 private String sign;   ->  "sign":"",
 ^(\s*)(\w+)(?:\s+)(\w+)(?:\s+)(\w+);     ->     $1"$4":"",
+
+
+"alias":"NJ",  ->   Assert.assertEquals(user.getAlias(), "NJ");
+^(\s*)\"(\w+)\"(?:\s*):(?:\s*)\"(.*)\"  ->  $1Assert.assertEquals(user.get\u$2(), "$3");
