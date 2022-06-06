@@ -1,5 +1,8 @@
 package cz.ami.connector.daktela.http;
 
+import lombok.Data;
+
+@Data
 public class IntegrationConfigs {
     private String name;
     private String title;

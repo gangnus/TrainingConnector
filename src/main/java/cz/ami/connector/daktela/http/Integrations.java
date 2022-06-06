@@ -1,5 +1,8 @@
 package cz.ami.connector.daktela.http;
 
+import lombok.Data;
+
+@Data
 public class Integrations {
     private String name;
     //TODO for enum - what will be used in the input json string - names or values?

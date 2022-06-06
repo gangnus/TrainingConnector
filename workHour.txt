@@ -2,7 +2,7 @@ Petr
 2.6.2022: 4h User class read+fetch
 3.6.2022: 7h User - all commands
 5.6.2022: 3h User Json tree example
-
+6.6.2022: 8h User: read&readAll tested by Midpoint, Unit test for structure runs
 
 
 Tomas
