@@ -3,6 +3,10 @@ Petr
 3.6.2022: 7h User - all commands
 5.6.2022: 3h User Json tree example
 6.6.2022: 8h User: read&readAll tested by Midpoint, Unit test for structure runs
+7.6.2022: 8h Basic attributes added to the connector and scheme
+             LOGs added before exceptions throwing
+             Midpoint readAll and read debugged
+             Separating connection/request info from the business part.
 
 
 Tomas

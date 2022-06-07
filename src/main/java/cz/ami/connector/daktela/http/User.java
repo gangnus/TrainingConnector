@@ -78,38 +78,13 @@ public class User extends Item implements Create, Update, Delete{
     static public User read(HttpClient client, Integer timeout, String uriSource, String name){
         LOG.debug("----------- before single user request -----------------");
         User user = null;
-        String uriLine=uriSource+ API_V_6_USERS + "/" + name + DOT_JSON;
-        LOG.debug("uri ="+uriLine);
-        LOG.debug("timeout ="+timeout);
+        String opMessage = "single user" + name + "reading";
+        HttpRequest request = preprepareRequest(uriLineWithName(uriSource, name), timeout, opMessage)
+                .GET()
+                .build();
 
-
-        HttpRequest request = null;
-        try {
-            request = HttpRequest.newBuilder()
-                    .uri(new URI(uriLine))
-                    .timeout(Duration.of(timeout, SECONDS))
-                    .GET()
-                    .build();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            LOG.error("--------------------- Error in URI for a user reading" + uriLine + "\n" + e.getMessage());
-            throw new ConnectorException("--------------------- Error in URI for a user reading" + uriLine + "\n" + e.getMessage());
-        }
         LOG.debug("------------------- a request created, but not sent yet --------------------- ");
-        HttpResponse<String> response =
-                null;
-        try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOG.error("--------------------- IO error while reading single user " + e.getMessage());
-            throw new ConnectorException("--------------------- IO error while reading single user " + e.getMessage());
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            LOG.error("--------------------- interrupted while reading single user" + e.getMessage());
-            throw new ConnectorException("--------------------- interrupted while reading single user" + e.getMessage());
-        }
+        HttpResponse<String> response = prepareResponse(client, request, opMessage);
         String jsonString = response.body();
         LOG.debug("----------- ready jsonString -----------------");
         LOG.debug(jsonString);
@@ -123,39 +98,53 @@ public class User extends Item implements Create, Update, Delete{
 
         return user;
     }
+    static private String uriLineWithName(String uriSource, String name){
+        return uriSource+ API_V_6_USERS + "/" + name + DOT_JSON;
+    }
+    static private String uriLineWithoutName(String uriSource){
+        return uriSource + API_V_6_USERS + DOT_JSON;
+    }
 
-    public static Collection<User> readAll(HttpClient client, Integer timeout, String uriSource) {
-        LOG.debug("----------- before all users request -----------------");
-        HttpRequest request = null;
-        List<User> users = null;
-        String uriLine=uriSource + API_V_6_USERS + DOT_JSON;
+    static private HttpRequest.Builder preprepareRequest(String uriLine, Integer timeout, String opMessage){
         LOG.debug("uri ="+uriLine);
         LOG.debug("timeout ="+timeout);
 
         try {
-            request = HttpRequest.newBuilder()
-                    .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
-                    .timeout(Duration.of(timeout, SECONDS))
-                    .GET()
-                    .build();
+            return HttpRequest.newBuilder()
+                    .uri(new URI(uriLine))
+                    .timeout(Duration.of(timeout, SECONDS));
+
         } catch (URISyntaxException e) {
             e.printStackTrace();
             LOG.error("--------------------- Error in URI for all users reading" + uriLine + "\n" + e.getMessage());
-            throw new ConnectorException("--------------------- Error in URI for all users reading" + uriLine + "\n" + e.getMessage());
+            throw new ConnectorException("--------------------- Error in URI for " + opMessage + " " + uriLine + "\n" + e.getMessage());
         }
-        HttpResponse<String> response =
-                null;
+    }
+
+    static HttpResponse<String> prepareResponse(HttpClient client, HttpRequest request, String opMessage){
         try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
             e.printStackTrace();
-            LOG.error("--------------------- IO error while reading all users" + e.getMessage());
-            throw new ConnectorException("--------------------- IO error while reading all users" + e.getMessage());
+            LOG.error("--------------------- IO error while " + opMessage + " " + e.getMessage());
+            throw new ConnectorException("--------------------- IO error while " + opMessage + " " + e.getMessage());
         } catch (InterruptedException e) {
             e.printStackTrace();
-            LOG.error("--------------------- interrupted while reading all users" + e.getMessage());
-            throw new ConnectorException("--------------------- interrupted while reading all users" + e.getMessage());
+            LOG.error("--------------------- interrupted while " + opMessage + " " + e.getMessage());
+            throw new ConnectorException("--------------------- interrupted while " + opMessage + " " + e.getMessage());
         }
+    }
+
+    public static Collection<User> readAll(HttpClient client, Integer timeout, String uriSource) {
+        LOG.debug("----------- before all users request -----------------");
+        List<User> users = null;
+        String opMessage = "all users reading";
+        HttpRequest request = preprepareRequest(uriLineWithoutName(uriSource), timeout, opMessage)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = prepareResponse(client, request, opMessage);
+
         String jsonString = response.body();
 
         users = gson.fromJson(jsonString, userListType);
@@ -167,9 +156,7 @@ public class User extends Item implements Create, Update, Delete{
     @Override
     public void createRecord(HttpClient client, Integer timeout) throws URISyntaxException, IOException, InterruptedException {
         /*String jsonString = gson.toJson(this);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
-                .timeout(Duration.of(timeout, SECONDS))
+        HttpRequest request = preprepareRequest(uriLineWithoutName(uriSource), timeout, opMessage)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)))
                 .build();
         HttpResponse<String> response =
