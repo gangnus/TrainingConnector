@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 
 public class UserTest {
-    @Test
+    @Test( enabled=false )
     public void TestReadThroughConnection() throws IOException, URISyntaxException, InterruptedException {
         HttpClient client = HttpClient.newBuilder().build();
         String uriSource = "https://dddf6eef-93bb-45e8-9a27-572193940135.mock.pstmn.io";
@@ -18,9 +18,9 @@ public class UserTest {
         String jsonStringMust = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
         Gson gson = new Gson();
         String jsonStringGot = gson.toJson(user);
-        //Assert.assertEquals(jsonStringGot, jsonStringMust);
+        Assert.assertEquals(jsonStringGot, jsonStringMust);
     }
-    @Test
+    @Test( enabled=false )
     public void TestStructure() throws IOException {
         String jsonString = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
         Gson gson = new Gson();

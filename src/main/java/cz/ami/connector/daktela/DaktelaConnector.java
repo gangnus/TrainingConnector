@@ -103,18 +103,21 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
                 LOG.debug("------------------- before reading a user ---------------------");
                 String uidName  = ((EqualsFilter)filter).getAttribute().getName();
                 if(uidName == null) {
+                    LOG.error("A user can be searched by uid only");
                     throw new ConnectorException("A user can be searched by uid only");
                 }
                 List<Object> uidValue  = ((EqualsFilter)filter).getAttribute().getValue();
                 if(uidValue == null || uidValue.size()==0) {
+                    LOG.error("A uid for a user search is not set");
                     throw new ConnectorException("A uid for a user search is not set");
                 }
                 if(uidValue.size()>1) {
+                    LOG.error("A uid for a user search is not single");
                     throw new ConnectorException("A uid for a user search is not single");
                 }
                 String uidString = uidValue.get(0).toString();
 
-                User user = User.read(HttpClient.newBuilder().build(), 100, configuration.getServiceAddress(), "Novak");
+                User user = User.read(HttpClient.newBuilder().build(), 100, configuration.getServiceAddress(), uidString);
 
                 addUserToHandler(user, resultsHandler);
 
@@ -132,6 +135,10 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
         cob.setUid(user.getName());
         cob.setName(user.getTitle());
         cob.addAttribute(DaktelaSchema.ATTR_ALIAS, user.getAlias());
+        cob.addAttribute(DaktelaSchema.ATTR_DESCRIPTION, user.getDescription());
+        cob.addAttribute(DaktelaSchema.ATTR_PASSWORD, user.getPassword());
+        cob.addAttribute(DaktelaSchema.ATTR_CLID, user.getClid());
+        cob.addAttribute(DaktelaSchema.ATTR_EMAIL, user.getEmail());
 
         resultsHandler.handle(cob.build());
     }

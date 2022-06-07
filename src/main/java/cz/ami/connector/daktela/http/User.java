@@ -76,7 +76,7 @@ public class User extends Item implements Create, Update, Delete{
     private static final Trace LOG = TraceManager.getTrace(User.class);
 
     static public User read(HttpClient client, Integer timeout, String uriSource, String name){
-        LOG.debug("----------- before request -----------------");
+        LOG.debug("----------- before single user request -----------------");
         User user = null;
         String uriLine=uriSource+ API_V_6_USERS + "/" + name + DOT_JSON;
         LOG.debug("uri ="+uriLine);
@@ -92,6 +92,7 @@ public class User extends Item implements Create, Update, Delete{
                     .build();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+            LOG.error("--------------------- Error in URI for a user reading" + uriLine + "\n" + e.getMessage());
             throw new ConnectorException("--------------------- Error in URI for a user reading" + uriLine + "\n" + e.getMessage());
         }
         LOG.debug("------------------- a request created, but not sent yet --------------------- ");
@@ -101,27 +102,36 @@ public class User extends Item implements Create, Update, Delete{
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
             e.printStackTrace();
+            LOG.error("--------------------- IO error while reading single user " + e.getMessage());
             throw new ConnectorException("--------------------- IO error while reading single user " + e.getMessage());
 
         } catch (InterruptedException e) {
             e.printStackTrace();
+            LOG.error("--------------------- interrupted while reading single user" + e.getMessage());
             throw new ConnectorException("--------------------- interrupted while reading single user" + e.getMessage());
         }
         String jsonString = response.body();
         LOG.debug("----------- ready jsonString -----------------");
+        LOG.debug(jsonString);
         user = gson.fromJson(jsonString, User.class);
         LOG.debug("----------- ready user -----------------");
 
         LOG.debug("name="+user.getName());
         LOG.debug("title="+user.getTitle());
         LOG.debug("alias="+user.getAlias());
+        LOG.debug("e-mail="+user.getEmail());
+
         return user;
     }
 
     public static Collection<User> readAll(HttpClient client, Integer timeout, String uriSource) {
+        LOG.debug("----------- before all users request -----------------");
         HttpRequest request = null;
         List<User> users = null;
         String uriLine=uriSource + API_V_6_USERS + DOT_JSON;
+        LOG.debug("uri ="+uriLine);
+        LOG.debug("timeout ="+timeout);
+
         try {
             request = HttpRequest.newBuilder()
                     .uri(new URI(uriSource+ API_V_6_USERS + DOT_JSON))
@@ -130,6 +140,7 @@ public class User extends Item implements Create, Update, Delete{
                     .build();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+            LOG.error("--------------------- Error in URI for all users reading" + uriLine + "\n" + e.getMessage());
             throw new ConnectorException("--------------------- Error in URI for all users reading" + uriLine + "\n" + e.getMessage());
         }
         HttpResponse<String> response =
@@ -138,9 +149,11 @@ public class User extends Item implements Create, Update, Delete{
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
             e.printStackTrace();
+            LOG.error("--------------------- IO error while reading all users" + e.getMessage());
             throw new ConnectorException("--------------------- IO error while reading all users" + e.getMessage());
         } catch (InterruptedException e) {
             e.printStackTrace();
+            LOG.error("--------------------- interrupted while reading all users" + e.getMessage());
             throw new ConnectorException("--------------------- interrupted while reading all users" + e.getMessage());
         }
         String jsonString = response.body();
