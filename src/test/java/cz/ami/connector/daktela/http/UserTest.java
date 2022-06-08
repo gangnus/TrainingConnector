@@ -1,10 +1,9 @@
 package cz.ami.connector.daktela.http;
 import com.google.gson.Gson;
+import cz.ami.connector.daktela.model.User;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -14,7 +13,7 @@ public class UserTest {
     public void TestReadThroughConnection() throws IOException, URISyntaxException, InterruptedException {
         HttpClient client = HttpClient.newBuilder().build();
         String uriSource = "https://dddf6eef-93bb-45e8-9a27-572193940135.mock.pstmn.io";
-        User user = User.read(client, 100, uriSource, "Novak");
+        User user = DaktelaConnection.getINST().read("Novak", User.class);
         String jsonStringMust = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
         Gson gson = new Gson();
         String jsonStringGot = gson.toJson(user);

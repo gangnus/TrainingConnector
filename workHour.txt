@@ -7,6 +7,8 @@ Petr
              LOGs added before exceptions throwing
              Midpoint readAll and read debugged
              Separating connection/request info from the business part.
+8.6.2022: 6h Model & http connection separated
+             After old connectors cleaning IDM stopped to show any new connectors. (But registers them)
 
 
 Tomas

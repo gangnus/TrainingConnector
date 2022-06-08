@@ -9,6 +9,9 @@ public class DaktelaConfiguration extends AbstractConfiguration {
 	
     private String serviceAddress = null;
 
+
+    private Integer timeoutSeconds = 100;
+
     public DaktelaConfiguration() {
         //TODO default values
     }
@@ -26,5 +29,12 @@ public class DaktelaConfiguration extends AbstractConfiguration {
 
     public void setServiceAddress(String serviceAddress) {
         this.serviceAddress = serviceAddress;
+    }
+
+    public void setServiceTimeoutSeconds(Integer timeoutSeconds) {
+        this.serviceAddress = serviceAddress;
+    }
+    public Integer getTimeoutSeconds() {
+        return timeoutSeconds;
     }
 }

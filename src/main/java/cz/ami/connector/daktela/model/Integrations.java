@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela.http;
+package cz.ami.connector.daktela.model;
 
 import lombok.Data;
 

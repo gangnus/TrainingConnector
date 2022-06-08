@@ -3,6 +3,8 @@ package cz.ami.connector.daktela;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+import cz.ami.connector.daktela.http.DaktelaConnection;
+import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
@@ -16,11 +18,7 @@ import org.identityconnectors.framework.spi.operations.SchemaOp;
 import org.identityconnectors.framework.spi.operations.SearchOp;
 import org.identityconnectors.framework.spi.operations.TestOp;
 import org.identityconnectors.framework.spi.operations.UpdateOp;
-import cz.ami.connector.daktela.http.User;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -73,6 +71,10 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
     public FilterTranslator<Filter> createFilterTranslator(ObjectClass objectClass, OperationOptions options) {
         return CollectionUtil::newList;
     }
+    static private void errorReaction(String message){
+        LOG.error(message);
+        throw new ConnectorException(message);
+    }
 
     @Override
     public void executeQuery(ObjectClass objectClass, Filter filter, ResultsHandler resultsHandler, OperationOptions options) {
@@ -91,7 +93,7 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
             if(filter == null){
                 LOG.debug("------------------- before reading all users ---------------------");
 
-                Collection<User> users = User.readAll(HttpClient.newBuilder().build(), 100, configuration.getServiceAddress());
+                Collection<User> users = DaktelaConnection.getINST().readAll(User.class);
                 if(users == null) {
                     throw new ConnectorException("Users list not found");
                 }
@@ -103,21 +105,18 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
                 LOG.debug("------------------- before reading a user ---------------------");
                 String uidName  = ((EqualsFilter)filter).getAttribute().getName();
                 if(uidName == null) {
-                    LOG.error("A user can be searched by uid only");
-                    throw new ConnectorException("A user can be searched by uid only");
+                    errorReaction("A user can be searched by uid only");
                 }
                 List<Object> uidValue  = ((EqualsFilter)filter).getAttribute().getValue();
                 if(uidValue == null || uidValue.size()==0) {
-                    LOG.error("A uid for a user search is not set");
-                    throw new ConnectorException("A uid for a user search is not set");
+                    errorReaction("A uid for a user search is not set");
                 }
                 if(uidValue.size()>1) {
-                    LOG.error("A uid for a user search is not single");
-                    throw new ConnectorException("A uid for a user search is not single");
+                    errorReaction("A uid for a user search is not single");
                 }
                 String uidString = uidValue.get(0).toString();
 
-                User user = User.read(HttpClient.newBuilder().build(), 100, configuration.getServiceAddress(), uidString);
+                User user = DaktelaConnection.getINST().read(uidString, User.class);
 
                 addUserToHandler(user, resultsHandler);
 
