@@ -36,7 +36,9 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
     
     @Override
     public void init(Configuration configuration) {
+
         this.configuration = (DaktelaConfiguration) configuration;
+        DaktelaConnection.setINST(this.configuration);
     }
     
     @Override
@@ -93,7 +95,7 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
             if(filter == null){
                 LOG.debug("------------------- before reading all users ---------------------");
 
-                Collection<User> users = DaktelaConnection.getINST().readAll(User.class);
+                List<User> users = DaktelaConnection.getINST().readAll(User.class);
                 if(users == null) {
                     throw new ConnectorException("Users list not found");
                 }

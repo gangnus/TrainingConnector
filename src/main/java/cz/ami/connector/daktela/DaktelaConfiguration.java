@@ -31,7 +31,7 @@ public class DaktelaConfiguration extends AbstractConfiguration {
         this.serviceAddress = serviceAddress;
     }
 
-    public void setServiceTimeoutSeconds(Integer timeoutSeconds) {
+    public void setTimeoutSeconds(Integer timeoutSeconds) {
         this.serviceAddress = serviceAddress;
     }
     public Integer getTimeoutSeconds() {

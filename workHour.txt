@@ -9,6 +9,7 @@ Petr
              Separating connection/request info from the business part.
 8.6.2022: 6h Model & http connection separated
              After old connectors cleaning IDM stopped to show any new connectors. (But registers them)
+9.6.2022: 8h Model & http connection separated, debugged, tested through midpoint
 
 
 Tomas

@@ -3,6 +3,10 @@ package cz.ami.connector.daktela.http;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 import cz.ami.connector.daktela.DaktelaConfiguration;
 import cz.ami.connector.daktela.model.Item;
@@ -42,8 +46,12 @@ public class DaktelaConnection {
         return INST;
     }
 
-    public static void setINST(DaktelaConnection INST) {
-        if (DaktelaConnection.INST == null) DaktelaConnection.INST = INST;
+    public static void setINST(DaktelaConfiguration config) {
+        if (DaktelaConnection.INST == null) {
+            INST = new DaktelaConnection(config);
+        } else {
+            INST.configuration = config;
+        }
     }
 
     private DaktelaConnection(DaktelaConfiguration configuration) {
@@ -123,20 +131,28 @@ public class DaktelaConnection {
     }
 
 
-    public <I extends Item> Collection<I> readAll(Class<I> itemClass) {
-        LOG.debug("----------- before all users request -----------------");
-        List<I> items = null;
-        String opMessage = "all "+ itemClass.getSimpleName() + "s reading";
+    public <I extends Item> List<I> readAll(Class<I> itemClass) {
 
+
+        String opMessage = "all "+ itemClass.getSimpleName() + "s reading";
+        LOG.debug("----------- before " + opMessage + " request -----------------");
         HttpRequest request = preprepareRequest(uriLineForAllItems(itemClass), opMessage)
                 .GET()
                 .build();
-
+        LOG.debug("----------- after " + opMessage + " request preparation -----------------");
         HttpResponse<String> response = prepareResponse(request, opMessage);
+        LOG.debug("----------- after " + opMessage + " getting response -----------------");
 
         String jsonString = response.body();
-        Type userListType = new TypeToken<ArrayList<I>>(){}.getType();
-        items = gson.fromJson(jsonString, userListType);
+
+        JsonParser jsonParser = new JsonParser();
+        JsonArray jsonArray  = (JsonArray)jsonParser.parse(jsonString);
+
+        List<I> items = new ArrayList<>();
+        jsonArray.forEach(jsonElement -> {
+            items.add(gson.fromJson(jsonElement, itemClass));
+            LOG.debug("---------------name["+(items.size()-1) + "]=" +  items.get(items.size()-1).getName());
+        });
         return items;
     }
 

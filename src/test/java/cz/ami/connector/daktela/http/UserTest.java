@@ -1,24 +1,65 @@
 package cz.ami.connector.daktela.http;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import cz.ami.connector.daktela.DaktelaConfiguration;
 import cz.ami.connector.daktela.model.User;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class UserTest {
+    String uriSource = "https://c15be332-489e-455e-81f0-146b386abbad.mock.pstmn.io";
+
+    @BeforeMethod
+    public void initConfiguration(){
+        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        configuration.setServiceAddress(uriSource);
+        configuration.setTimeoutSeconds(100);
+        DaktelaConnection.setINST(configuration);
+    }
+
     @Test( enabled=false )
     public void TestReadThroughConnection() throws IOException, URISyntaxException, InterruptedException {
         HttpClient client = HttpClient.newBuilder().build();
-        String uriSource = "https://dddf6eef-93bb-45e8-9a27-572193940135.mock.pstmn.io";
+
         User user = DaktelaConnection.getINST().read("Novak", User.class);
         String jsonStringMust = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
         Gson gson = new Gson();
         String jsonStringGot = gson.toJson(user);
         Assert.assertEquals(jsonStringGot, jsonStringMust);
     }
+
+    @Test( enabled=false )
+    public void TestReadAllThroughConnection() throws IOException {
+        HttpClient client = HttpClient.newBuilder().build();
+
+        List<User> usersFromServer = DaktelaConnection.getINST().readAll(User.class);
+        String jsonStringMust =
+                "[" +
+                new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes()) +
+                ", " +
+                new String(getClass().getClassLoader().getResourceAsStream("user2.json").readAllBytes()) +
+                "]";
+
+        Gson gson = new Gson();
+        Type userListType = new TypeToken<ArrayList<User>>(){}.getType();
+        List<User> usersFromFiles  = new ArrayList<>(gson.fromJson(jsonStringMust, userListType));
+
+        Assert.assertEquals(usersFromServer.size(), 2);
+        Assert.assertEquals(usersFromServer.get(0).getName(), usersFromFiles.get(0).getName());
+        Assert.assertEquals(usersFromServer.get(0).getDescription(), usersFromFiles.get(0).getDescription());
+        Assert.assertEquals(usersFromServer.get(1).getName(), usersFromFiles.get(1).getName());
+        Assert.assertEquals(usersFromServer.get(1).getDescription(), usersFromFiles.get(1).getDescription());
+    }
+
     @Test( enabled=false )
     public void TestStructure() throws IOException {
         String jsonString = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
