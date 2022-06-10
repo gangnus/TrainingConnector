@@ -1,17 +1,17 @@
 Petr
-2.6.2022: 4h User class read+fetch
-3.6.2022: 7h User - all commands
-5.6.2022: 3h User Json tree example
-6.6.2022: 8h User: read&readAll tested by Midpoint, Unit test for structure runs
-7.6.2022: 8h Basic attributes added to the connector and scheme
+02.6.2022: 4h User class read+fetch
+03.6.2022: 7h User - all commands
+05.6.2022: 3h User Json tree example
+06.6.2022: 8h User: read&readAll tested by Midpoint, Unit test for structure runs
+07.6.2022: 8h Basic attributes added to the connector and scheme
              LOGs added before exceptions throwing
              Midpoint readAll and read debugged
              Separating connection/request info from the business part.
-8.6.2022: 6h Model & http connection separated
+08.6.2022: 6h Model & http connection separated
              After old connectors cleaning IDM stopped to show any new connectors. (But registers them)
-9.6.2022: 8h Model & http connection separated, debugged, tested through midpoint
-
+09.6.2022: 8h Model & http connection separated, debugged, tested through midpoint
+10.6.2022: 6h update method in connection and connector
 
 Tomas
-2.6.2022: 3,5h
+02.6.2022: 3,5h
 

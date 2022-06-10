@@ -14,10 +14,7 @@ import org.identityconnectors.framework.common.objects.filter.FilterTranslator;
 import org.identityconnectors.framework.spi.Configuration;
 import org.identityconnectors.framework.spi.Connector;
 import org.identityconnectors.framework.spi.ConnectorClass;
-import org.identityconnectors.framework.spi.operations.SchemaOp;
-import org.identityconnectors.framework.spi.operations.SearchOp;
-import org.identityconnectors.framework.spi.operations.TestOp;
-import org.identityconnectors.framework.spi.operations.UpdateOp;
+import org.identityconnectors.framework.spi.operations.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,11 +26,11 @@ import java.util.Set;
  * Tested on Midpoint 4.4.1 with ConnId 1.5.0.18
  */
 @ConnectorClass(displayNameKey = "daktela.connector.display", configurationClass = DaktelaConfiguration.class)
-public class DaktelaConnector extends DaktelaConfiguration implements Connector, TestOp, SchemaOp, SearchOp<Filter>, UpdateOp {
+public class DaktelaConnector extends DaktelaConfiguration implements Connector, CreateOp, TestOp, SchemaOp, SearchOp<Filter>, UpdateOp {
         
 	private static final Trace LOG = TraceManager.getTrace(DaktelaConnector.class);
     private DaktelaConfiguration configuration;
-    
+
     @Override
     public void init(Configuration configuration) {
 
@@ -63,11 +60,7 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
 	    schema();
 	}
 
-    @Override
-    public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> attributes, OperationOptions options) {
-        LOG.debug("Start update of UID " + uid.getUidValue());
-        return uid;
-    }
+
 
     @Override
     public FilterTranslator<Filter> createFilterTranslator(ObjectClass objectClass, OperationOptions options) {
@@ -122,10 +115,88 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
 
                 addUserToHandler(user, resultsHandler);
 
+
             }
         }
-    }
 
+    }
+    @Override
+    public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> attributes, OperationOptions options) {
+        LOG.debug("Start update of the user with UID = " + uid.getUidValue());
+        User user = new User();
+        for (Attribute attr: attributes) {
+            LOG.debug("name of an attribute = "+ attr.getName() + ",  delta=" + attr.toString());
+            switch (attr.getName()) {
+                case "__UID__":
+                    user.setName(attr.getValue().get(0).toString());
+                    break;
+                case "__NAME__":
+                    user.setTitle(attr.getValue().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_ALIAS:
+                    user.setAlias(attr.getValue().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_DESCRIPTION:
+                    user.setDescription(attr.getValue().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_PASSWORD:
+                    user.setPassword(attr.getValue().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_CLID:
+                    user.setClid(attr.getValue().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_EMAIL:
+                    user.setEmail(attr.getValue().get(0).toString());
+                    break;
+
+            }
+            DaktelaConnection.getINST().updateRecord(user);
+        }
+        return uid;
+    }
+    @Override
+    public Uid create(ObjectClass objectClass, Set<Attribute> set, OperationOptions operationOptions) {
+        LOG.debug("Start Create of the user " );
+
+        return null;
+    }
+/*
+    @Override
+    public Set<AttributeDelta> updateDelta(ObjectClass objectClass, Uid uid, Set<AttributeDelta> set, OperationOptions operationOptions) {
+        LOG.debug("Start updateDelta of the user with UID = " + uid.getUidValue());
+        User user = new User();
+
+        for (AttributeDelta delta: set) {
+            LOG.debug("name of an attribute = "+ delta.getName() + ",  delta=" + delta.toString());
+            switch(delta.getName()){
+                case "__UID__":
+                    user.setName(delta.getValuesToReplace().get(0).toString());
+                    break;
+                case "__NAME__":
+                    user.setTitle(delta.getValuesToReplace().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_ALIAS:
+                    user.setAlias(delta.getValuesToReplace().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_DESCRIPTION:
+                    user.setDescription(delta.getValuesToReplace().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_PASSWORD:
+                    user.setPassword(delta.getValuesToReplace().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_CLID:
+                    user.setClid(delta.getValuesToReplace().get(0).toString());
+                    break;
+                case DaktelaSchema.ATTR_EMAIL:
+                    user.setEmail(delta.getValuesToReplace().get(0).toString());
+                    break;
+
+            }
+            DaktelaConnection.getINST().updateRecord(user);
+
+        }
+        return null;
+    }*/
     /**
      *  udelat objekt a poslat ho
       */
@@ -143,4 +214,5 @@ public class DaktelaConnector extends DaktelaConfiguration implements Connector,
 
         resultsHandler.handle(cob.build());
     }
+
 }

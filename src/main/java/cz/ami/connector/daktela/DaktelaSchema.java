@@ -2,6 +2,7 @@ package cz.ami.connector.daktela;
 
 
 import org.identityconnectors.framework.common.objects.*;
+import org.identityconnectors.framework.spi.operations.SearchOp;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class DaktelaSchema {
         // USER
         Set<AttributeInfo> userAttributes = new HashSet<>();
         userAttributes.add(AttributeInfoBuilder.define(Uid.NAME).setCreateable(false).setUpdateable(false).setRequired(true).build());
-        userAttributes.add(AttributeInfoBuilder.define(Name.NAME).setRequired(true).build());
+        userAttributes.add(AttributeInfoBuilder.define(Name.NAME).setCreateable(true).setUpdateable(true).setRequired(true).build());
         //userAttributes.add(AttributeInfoBuilder.define(ATTR_FIRSTNAME).build());
         userAttributes.add(AttributeInfoBuilder.define(ATTR_ALIAS).setCreateable(true).setUpdateable(true).setRequired(false).build());
         userAttributes.add(AttributeInfoBuilder.define(ATTR_DESCRIPTION).setCreateable(true).setUpdateable(true).setRequired(false).build());
@@ -34,6 +35,7 @@ public class DaktelaSchema {
         userAttributes.add(AttributeInfoBuilder.define(ATTR_EMAIL).setCreateable(true).setUpdateable(true).setRequired(true).build());
 
         schemaBuilder.defineObjectClass(CLASS_USER.getObjectClassValue(), userAttributes);
+        schemaBuilder.defineOperationOption(OperationOptionInfoBuilder.buildPageSize(), SearchOp.class);
         return schemaBuilder.build();
 	}
 }

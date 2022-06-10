@@ -34,6 +34,9 @@ public class DaktelaConfiguration extends AbstractConfiguration {
     public void setTimeoutSeconds(Integer timeoutSeconds) {
         this.serviceAddress = serviceAddress;
     }
+
+    @ConfigurationProperty(order = 10, displayMessageKey = "default.timeout.label",
+            groupMessageKey = "basic.group", helpMessageKey = "default.timeout.hint", required = true, confidential = false)
     public Integer getTimeoutSeconds() {
         return timeoutSeconds;
     }
