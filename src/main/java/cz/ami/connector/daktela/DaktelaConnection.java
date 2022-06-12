@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela.http;
+package cz.ami.connector.daktela;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -6,7 +6,6 @@ import com.google.common.net.HttpHeaders;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import cz.ami.connector.daktela.DaktelaConfiguration;
 import cz.ami.connector.daktela.model.Item;
 import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -43,12 +42,16 @@ public class DaktelaConnection {
         return INST;
     }
 
-    public static void setINST(DaktelaConfiguration config) {
+    public static void setNewINST(DaktelaConfiguration config) {
         if (DaktelaConnection.INST == null) {
             INST = new DaktelaConnection(config);
         } else {
             INST.configuration = config;
         }
+    }
+
+    public static void setINST(DaktelaConnection connection) {
+        INST = connection;
     }
 
     private DaktelaConnection(DaktelaConfiguration configuration) {

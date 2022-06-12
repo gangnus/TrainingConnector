@@ -11,6 +11,7 @@ Petr
              After old connectors cleaning IDM stopped to show any new connectors. (But registers them)
 09.6.2022: 8h Model & http connection separated, debugged, tested through midpoint
 10.6.2022: 6h update method in connection and connector
+12.6.2022: 8h Update testing by Mockito. Change from Testng to JUnit 5. 
 
 Tomas
 02.6.2022: 3,5h
