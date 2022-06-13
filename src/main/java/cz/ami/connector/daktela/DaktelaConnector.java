@@ -6,6 +6,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
+import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.identityconnectors.framework.common.objects.filter.Filter;
@@ -123,8 +124,51 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
     @Override
     public Uid create(ObjectClass objectClass, Set<Attribute> set, OperationOptions operationOptions) {
         LOG.debug("Start Create of the user " );
+        if (set == null || set.isEmpty()) {
+            errorReaction("attributes not provided or empty");
+        }
+        Uid uid = null;
+        User user = new User();
 
-        return null;
+        if (set!= null){
+            for (Attribute attribute : set) {
+                LOG.debug("name of an attribute = " + attribute.getName() + ",  value=" + attribute.getValue().get(0).toString());
+                String value = attribute.getValue().get(0).toString();
+                String name = attribute.getName();
+                // __UID__
+                if (name.equals(Uid.NAME)) {
+                    uid = new Uid(value);
+                }
+                // __NAME__
+                else if (name.equals(Name.NAME)) {
+                    user.setTitle(value);
+                } else
+
+                    switch (name) {
+
+                        case DaktelaSchema.ATTR_ALIAS:
+                            user.setAlias(value);
+                            break;
+                        case DaktelaSchema.ATTR_DESCRIPTION:
+                            user.setDescription(value);
+                            break;
+                        case DaktelaSchema.ATTR_PASSWORD:
+                            user.setPassword(value);
+                            break;
+                        case DaktelaSchema.ATTR_CLID:
+                            user.setClid(value);
+                            break;
+                        case DaktelaSchema.ATTR_EMAIL:
+                            user.setEmail(value);
+                            break;
+                    }
+            }
+        }
+
+        DaktelaConnection.getINST().createRecord(user);
+
+
+        return uid;
     }
 
     @Override
@@ -134,49 +178,49 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         User user = new User();
         user.setName(uid.getUidValue());
         Boolean userChanged = false;
-        for (AttributeDelta delta : set) {
-            LOG.debug("name of an attribute = " + delta.getName() + ",  delta=" + delta.toString());
-            String value = AttributeDeltaUtil.getAsStringValue(delta);
+        if (set!= null){
+            for (AttributeDelta delta : set) {
+                LOG.debug("name of an attribute = " + delta.getName() + ",  delta=" + delta.toString());
+                String value = delta.getValuesToReplace().get(0).toString();
+                String name = delta.getName();
+                // __UID__
+                if (name.equals(Uid.NAME) && !uid.getUidValue().equals(value)) {
+                    // Doesn't support to modify 'uid'
+                    errorReaction("UID/Name cannot be changed. There was an attempt to change from " + uid.getUidValue() + " to " + value);
+                }
+                // __NAME__
+                else if (name.equals(Name.NAME)) {
+                    user.setTitle(value);
+                    userChanged = true;
+                } else
 
-            // __UID__
-            if (delta.getName().equals(Uid.NAME)) {
-                // Doesn't support to modify 'uid'
-                errorReaction("UID/Name cannot be changed");
+                    switch (name) {
+
+                        case DaktelaSchema.ATTR_ALIAS:
+                            user.setAlias(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_DESCRIPTION:
+                            user.setDescription(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_PASSWORD:
+                            user.setPassword(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_CLID:
+                            user.setClid(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_EMAIL:
+                            user.setEmail(value);
+                            userChanged = true;
+                            break;
+                    }
             }
-            // __NAME__
-            else if (delta.getName().equals(Name.NAME)) {
-                user.setTitle(value);
-                userChanged = true;
-            } else
-
-            switch (delta.getName()) {
-
-                case DaktelaSchema.ATTR_ALIAS:
-                    user.setAlias(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_DESCRIPTION:
-                    user.setDescription(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_PASSWORD:
-                    user.setPassword(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_CLID:
-                    user.setClid(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_EMAIL:
-                    user.setEmail(value);
-                    userChanged = true;
-                    break;
-
-            }
-            if (userChanged) {
-                DaktelaConnection.getINST().updateRecord(user);
-            }
-
+        }
+        if (userChanged) {
+            DaktelaConnection.getINST().updateRecord(user);
         }
         return null;
     }
