@@ -63,7 +63,7 @@ public class DaktelaConnection {
     }
 
     public Integer getTimeout() {
-        return configuration.getTimeoutSeconds();
+        return configuration.getTimeout();
     }
 
     /**

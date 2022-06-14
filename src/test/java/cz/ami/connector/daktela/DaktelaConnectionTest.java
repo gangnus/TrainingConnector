@@ -22,7 +22,7 @@ class DaktelaConnectionTest {
     public void initConfiguration(){
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         configuration.setServiceAddress(uriSource);
-        configuration.setTimeoutSeconds(100);
+        configuration.setTimeout(100);
         DaktelaConnection.setNewINST(configuration);
     }
     @Test

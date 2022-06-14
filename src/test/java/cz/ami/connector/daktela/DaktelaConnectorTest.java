@@ -34,15 +34,54 @@ class DaktelaConnectorTest {
         });
         return set;
     }
+    static Set<Attribute> createAttributeSetFromMap(Map<String, Object> map){
+        Set<Attribute> set = new HashSet<>();
+        map.forEach((name,value) -> {
+            set.add(AttributeBuilder.build(name,Arrays.asList(value)));
+        });
+        return set;
+    }
+    static void assertUserCaptorFields(Map<String, Object> map, User user, String uid, String message){
+        assertEquals(uid, user.getName(),message);
+        assertEquals(map.get(Name.NAME), user.getTitle(),message);
+        assertEquals(map.get(DaktelaSchema.ATTR_ALIAS), user.getAlias(),message);
+        assertEquals(map.get(DaktelaSchema.ATTR_DESCRIPTION), user.getDescription(),message);
+        assertEquals(map.get(DaktelaSchema.ATTR_PASSWORD), user.getPassword(),message);
+        assertEquals(map.get(DaktelaSchema.ATTR_CLID), user.getClid(),message);
+        assertEquals(map.get(DaktelaSchema.ATTR_EMAIL), user.getEmail(),message);
+    }
 
-    static void assertUserCaptorFields(Map<String, Object> map, User user, String uid){
-        assertEquals(uid, user.getName());
-        assertEquals(map.get(Name.NAME), user.getTitle());
-        assertEquals(map.get(DaktelaSchema.ATTR_ALIAS), user.getAlias());
-        assertEquals(map.get(DaktelaSchema.ATTR_DESCRIPTION), user.getDescription());
-        assertEquals(map.get(DaktelaSchema.ATTR_PASSWORD), user.getPassword());
-        assertEquals(map.get(DaktelaSchema.ATTR_CLID), user.getClid());
-        assertEquals(map.get(DaktelaSchema.ATTR_EMAIL), user.getEmail());
+    /** -------------- test a correct creation of a user
+     *
+     */
+    @Test
+    public void testCreateAllBaseFieldsCorrect() {
+
+        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        connector.init(configuration);
+        DaktelaConnection.setINST(mockConnection);
+
+        Map<String, Object> map = new HashMap<>() {{
+            put(Uid.NAME,"user1");
+            put(Name.NAME, "Professor User");
+            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
+            put(DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof");
+            put(DaktelaSchema.ATTR_PASSWORD, "pwdPWD");
+            put(DaktelaSchema.ATTR_CLID, "+420 000 111 222");
+            put(DaktelaSchema.ATTR_EMAIL, "prof@uni.com");
+        }};
+
+        Set<Attribute> set = createAttributeSetFromMap(map);
+
+        doNothing().when(mockConnection).createRecord(userCaptor.capture());
+
+        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
+
+        verify(mockConnection).createRecord(userCaptor.capture());
+        // assert user fields
+        assertUserCaptorFields(map, userCaptor.getValue(), "user1", " user fields ");
+
+        assertEquals("user1", uidCreated.getUidValue(), "assert returned value");
     }
 
     /** -------------- test a correct update of a user
@@ -71,7 +110,7 @@ class DaktelaConnectorTest {
         connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
 
         verify(mockConnection).updateRecord(userCaptor.capture());
-        assertUserCaptorFields(map, userCaptor.getValue(), "user1");
+        assertUserCaptorFields(map, userCaptor.getValue(), "user1", " user fields ");
 
     }
 

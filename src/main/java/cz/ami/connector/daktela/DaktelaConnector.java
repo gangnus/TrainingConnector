@@ -138,6 +138,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
                 // __UID__
                 if (name.equals(Uid.NAME)) {
                     uid = new Uid(value);
+                    user.setName(value);
                 }
                 // __NAME__
                 else if (name.equals(Name.NAME)) {

@@ -10,7 +10,7 @@ public class DaktelaConfiguration extends AbstractConfiguration {
     private String serviceAddress = null;
 
 
-    private Integer timeoutSeconds = 100;
+    private Integer timeout = 100;
 
     public DaktelaConfiguration() {
         //TODO default values
@@ -31,13 +31,13 @@ public class DaktelaConfiguration extends AbstractConfiguration {
         this.serviceAddress = serviceAddress;
     }
 
-    public void setTimeoutSeconds(Integer timeoutSeconds) {
+    public void setTimeout(Integer timeout) {
         this.serviceAddress = serviceAddress;
     }
 
     @ConfigurationProperty(order = 10, displayMessageKey = "default.timeout.label",
             groupMessageKey = "basic.group", helpMessageKey = "default.timeout.hint", required = true, confidential = false)
-    public Integer getTimeoutSeconds() {
-        return timeoutSeconds;
+    public Integer getTimeout() {
+        return timeout;
     }
 }
