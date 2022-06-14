@@ -132,6 +132,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
 
         if (set!= null){
             for (Attribute attribute : set) {
+                //TODO safe log call
                 LOG.debug("name of an attribute = " + attribute.getName() + ",  value=" + attribute.getValue().get(0).toString());
                 String value = attribute.getValue().get(0).toString();
                 String name = attribute.getName();
@@ -181,9 +182,21 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         Boolean userChanged = false;
         if (set!= null){
             for (AttributeDelta delta : set) {
-                LOG.debug("name of an attribute = " + delta.getName() + ",  delta=" + delta.toString());
-                String value = delta.getValuesToReplace().get(0).toString();
+
+                String value = null;
+                try {
+                    value = delta.getValuesToReplace().get(0).toString();
+                } catch(Exception e){}
                 String name = delta.getName();
+                String valueAdd = null;
+                try {
+                    valueAdd = delta.getValuesToAdd().get(0).toString();
+                } catch(Exception e){}
+                String valueRem = null;
+                try {
+                    valueRem = delta.getValuesToRemove().get(0).toString();
+                } catch(Exception e){}
+                LOG.debug("name of an attribute = " + delta.getName() + ",  replace=" + value + ",  Add=" + valueAdd + ",  Remove=" + valueRem);
                 // __UID__
                 if (name.equals(Uid.NAME) && !uid.getUidValue().equals(value)) {
                     // Doesn't support to modify 'uid'

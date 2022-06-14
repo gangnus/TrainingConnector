@@ -224,6 +224,9 @@ public class DaktelaConnection {
         }
         HttpRequest request = requestBuilder.build();
         try {
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("request = " + request.toString());
+            }
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
             e.printStackTrace();

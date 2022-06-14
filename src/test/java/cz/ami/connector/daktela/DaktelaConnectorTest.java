@@ -60,7 +60,8 @@ class DaktelaConnectorTest {
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
         DaktelaConnection.setINST(mockConnection);
-
+        //TODO
+        // Map.of
         Map<String, Object> map = new HashMap<>() {{
             put(Uid.NAME,"user1");
             put(Name.NAME, "Professor User");
