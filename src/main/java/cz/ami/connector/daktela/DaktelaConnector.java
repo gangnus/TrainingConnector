@@ -25,7 +25,7 @@ import java.util.Set;
  * Tested on Midpoint 4.4.1 with ConnId 1.5.0.18
  */
 @ConnectorClass(displayNameKey = "daktela.connector.display", configurationClass = DaktelaConfiguration.class)
-public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, SearchOp<Filter>, UpdateDeltaOp {
+public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, SearchOp<Filter>, UpdateOp {
         
 	private static final Trace LOG = TraceManager.getTrace(DaktelaConnector.class);
 
@@ -173,7 +173,6 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         return uid;
     }
 
-    @Override
     public Set<AttributeDelta> updateDelta(ObjectClass objectClass, Uid uid, Set<AttributeDelta> set, OperationOptions operationOptions) {
         LOG.debug("Start updateDelta of the user with UID = " + uid.getUidValue());
 
@@ -256,4 +255,65 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         resultsHandler.handle(cob.build());
     }
 
+    @Override
+    public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> set, OperationOptions operationOptions) {
+        LOG.debug("Start updateDelta of the user with UID = " + uid.getUidValue());
+
+        User user = new User();
+        user.setName(uid.getUidValue());
+        Boolean userChanged = false;
+        if (set!= null){
+            for (Attribute attribute : set) {
+                String name = attribute.getName();
+                String value = null;
+                try {
+                    value = attribute.getValue().get(0).toString();
+                } catch(Exception e){
+                    LOG.warn("name of an attribute = " + name + " has no values. err="+ e.getMessage());
+                    LOG.warn("attribute = " + attribute.toString());
+                    continue;
+                }
+
+                LOG.debug("name of an attribute = " + name + ", Value=" + value);
+                // __UID__
+                if (name.equals(Uid.NAME) && !uid.getUidValue().equals(value)) {
+                    // Doesn't support to modify 'uid'
+                    errorReaction("UID/Name cannot be changed. There was an attempt to change from " + uid.getUidValue() + " to " + value);
+                }
+                // __NAME__
+                else if (name.equals(Name.NAME)) {
+                    user.setTitle(value);
+                    userChanged = true;
+                } else
+
+                    switch (name) {
+
+                        case DaktelaSchema.ATTR_ALIAS:
+                            user.setAlias(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_DESCRIPTION:
+                            user.setDescription(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_PASSWORD:
+                            user.setPassword(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_CLID:
+                            user.setClid(value);
+                            userChanged = true;
+                            break;
+                        case DaktelaSchema.ATTR_EMAIL:
+                            user.setEmail(value);
+                            userChanged = true;
+                            break;
+                    }
+            }
+        }
+        if (userChanged) {
+            DaktelaConnection.getINST().updateRecord(user);
+        }
+        return uid;
+    }
 }

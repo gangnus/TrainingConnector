@@ -15,17 +15,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DaktelaConnectorTest {
+class DaktelaConnectorUnitTest {
     @Mock
     DaktelaConnection mockConnection;
     @InjectMocks
     DaktelaConnector connector;
     @Captor
     ArgumentCaptor<User> userCaptor;
-
-    @Test
-    void create() {
-    }
 
     static Set<AttributeDelta> createDeltaSetFromMap(Map<String, Object> map){
         Set<AttributeDelta> set = new HashSet<>();
@@ -85,7 +81,7 @@ class DaktelaConnectorTest {
         assertEquals("user1", uidCreated.getUidValue(), "assert returned value");
     }
 
-    /** -------------- test a correct update of a user
+    /** -------------- test updateDelta - a correct update of a user
      *
       */
     @Test
@@ -115,7 +111,7 @@ class DaktelaConnectorTest {
 
     }
 
-    /** -------------- test a correct update of aт empty user
+    /** -------------- test updateDelta - a correct update of aт empty user
      *
      */
     @Test
@@ -133,11 +129,79 @@ class DaktelaConnectorTest {
 
     }
 
-    /** -------------- test attempt to change a uid - must fail
+    /** -------------- test updateDelta - attempt to change a uid - must fail
      *
      */
     @Test
     public void testUpdateDeltaAttemptToChangeUid() {
+
+        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        connector.init(configuration);
+        DaktelaConnection.setINST(mockConnection);
+        Map<String, Object> map = new HashMap<>() {{
+            put(Uid.NAME, "NewUser");
+            put(Name.NAME, "Professor User");
+
+        }};
+        ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
+            Set<AttributeDelta> set = createDeltaSetFromMap(map);
+            connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
+        });
+    }
+    /** -------------- test update - a correct update of a user
+     *
+     */
+    @Test
+    public void testUpdateAllBaseFieldsCorrect() {
+
+        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        connector.init(configuration);
+        DaktelaConnection.setINST(mockConnection);
+
+        Map<String, Object> map = new HashMap<>(){{
+            put(Name.NAME,"Professor User");
+            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
+            put(DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof");
+            put(DaktelaSchema.ATTR_PASSWORD, "pwdPWD");
+            put(DaktelaSchema.ATTR_CLID, "+420 000 111 222");
+            put(DaktelaSchema.ATTR_EMAIL, "prof@uni.com");
+        }};
+
+        Set<Attribute> set =createAttributeSetFromMap(map);
+
+        doNothing().when(mockConnection).updateRecord(userCaptor.capture());
+
+        Uid returnedUid = connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
+
+        verify(mockConnection).updateRecord(userCaptor.capture());
+        assertUserCaptorFields(map, userCaptor.getValue(), "user1", " user fields ");
+        assertEquals("user1", returnedUid.getUidValue(), "check returned uid");
+    }
+
+    /** -------------- test update - a correct update of aт empty user
+     *
+     */
+    @Test
+    public void testUpdateNoBaseFieldsCorrect() {
+
+        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        connector.init(configuration);
+        DaktelaConnection.setINST(mockConnection);
+
+        Set<Attribute> set =createAttributeSetFromMap(new HashMap<>());
+
+        Uid returnedUid = connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
+
+        verify(mockConnection, never()).updateRecord(any());
+        assertEquals("user1", returnedUid.getUidValue(), "check returned uid");
+
+    }
+
+    /** -------------- test update - attempt to change a uid - must fail
+     *
+     */
+    @Test
+    public void testUpdateAttemptToChangeUid() {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
@@ -148,12 +212,13 @@ class DaktelaConnectorTest {
 
         }};
         ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
-            Set<AttributeDelta> set =createDeltaSetFromMap(map);
-            connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
+            Set<Attribute> set =createAttributeSetFromMap(map);
+            connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
         });
 
 
 
-
     }
+
+
 }

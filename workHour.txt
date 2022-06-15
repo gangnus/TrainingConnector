@@ -14,6 +14,7 @@ Petr
 12.6.2022: 8h Update testing by Mockito. Change from Testng to JUnit 5.
 13.6.2022: 6h Update & Create. Testing by Mockito.
 14.6.2022: 8h Debugging of call of Update through IDM
+15.6.2022: 8h Debugging of call of Update through IDM, testing Connector by ServerForUnitTesting
 
 Tomas
 02.6.2022: 3,5h
