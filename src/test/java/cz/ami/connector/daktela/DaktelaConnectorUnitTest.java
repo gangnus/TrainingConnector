@@ -37,7 +37,7 @@ class DaktelaConnectorUnitTest {
         });
         return set;
     }
-    static void assertUserCaptorFields(Map<String, Object> map, User user, String uid, String message){
+    static void assertUserFields(Map<String, Object> map, User user, String uid, String message){
         assertEquals(uid, user.getName(),message);
         assertEquals(map.get(Name.NAME), user.getTitle(),message);
         assertEquals(map.get(DaktelaSchema.ATTR_ALIAS), user.getAlias(),message);
@@ -58,15 +58,15 @@ class DaktelaConnectorUnitTest {
         DaktelaConnection.setINST(mockConnection);
         //TODO
         // Map.of
-        Map<String, Object> map = new HashMap<>() {{
-            put(Uid.NAME,"user1");
-            put(Name.NAME, "Professor User");
-            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
-            put(DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof");
-            put(DaktelaSchema.ATTR_PASSWORD, "pwdPWD");
-            put(DaktelaSchema.ATTR_CLID, "+420 000 111 222");
-            put(DaktelaSchema.ATTR_EMAIL, "prof@uni.com");
-        }};
+        Map<String, Object> map = Map.of(
+            Uid.NAME,"user1",
+            Name.NAME, "Professor User",
+            DaktelaSchema.ATTR_ALIAS, "alias Prof",
+            DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof",
+            DaktelaSchema.ATTR_PASSWORD, "pwdPWD",
+            DaktelaSchema.ATTR_CLID, "+420 000 111 222",
+            DaktelaSchema.ATTR_EMAIL, "prof@uni.com"
+        );
 
         Set<Attribute> set = createAttributeSetFromMap(map);
 
@@ -76,7 +76,7 @@ class DaktelaConnectorUnitTest {
 
         verify(mockConnection).createRecord(userCaptor.capture());
         // assert user fields
-        assertUserCaptorFields(map, userCaptor.getValue(), "user1", " user fields ");
+        assertUserFields(map, userCaptor.getValue(), "user1", " user fields ");
 
         assertEquals("user1", uidCreated.getUidValue(), "assert returned value");
     }
@@ -91,14 +91,14 @@ class DaktelaConnectorUnitTest {
         connector.init(configuration);
         DaktelaConnection.setINST(mockConnection);
 
-        Map<String, Object> map = new HashMap<>(){{
-            put(Name.NAME,"Professor User");
-            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
-            put(DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof");
-            put(DaktelaSchema.ATTR_PASSWORD, "pwdPWD");
-            put(DaktelaSchema.ATTR_CLID, "+420 000 111 222");
-            put(DaktelaSchema.ATTR_EMAIL, "prof@uni.com");
-        }};
+        Map<String, Object> map = Map.of(
+            Name.NAME,"Professor User",
+            DaktelaSchema.ATTR_ALIAS, "alias Prof",
+            DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof",
+            DaktelaSchema.ATTR_PASSWORD, "pwdPWD",
+            DaktelaSchema.ATTR_CLID, "+420 000 111 222",
+            DaktelaSchema.ATTR_EMAIL, "prof@uni.com"
+        );
 
         Set<AttributeDelta> set =createDeltaSetFromMap(map);
 
@@ -107,7 +107,7 @@ class DaktelaConnectorUnitTest {
         connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
 
         verify(mockConnection).updateRecord(userCaptor.capture());
-        assertUserCaptorFields(map, userCaptor.getValue(), "user1", " user fields ");
+        assertUserFields(map, userCaptor.getValue(), "user1", " user fields ");
 
     }
 
@@ -138,11 +138,11 @@ class DaktelaConnectorUnitTest {
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
         DaktelaConnection.setINST(mockConnection);
-        Map<String, Object> map = new HashMap<>() {{
-            put(Uid.NAME, "NewUser");
-            put(Name.NAME, "Professor User");
+        Map<String, Object> map = Map.of(
+            Uid.NAME, "NewUser",
+            Name.NAME, "Professor User"
 
-        }};
+        );
         ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
             Set<AttributeDelta> set = createDeltaSetFromMap(map);
             connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
@@ -158,14 +158,14 @@ class DaktelaConnectorUnitTest {
         connector.init(configuration);
         DaktelaConnection.setINST(mockConnection);
 
-        Map<String, Object> map = new HashMap<>(){{
-            put(Name.NAME,"Professor User");
-            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
-            put(DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof");
-            put(DaktelaSchema.ATTR_PASSWORD, "pwdPWD");
-            put(DaktelaSchema.ATTR_CLID, "+420 000 111 222");
-            put(DaktelaSchema.ATTR_EMAIL, "prof@uni.com");
-        }};
+        Map<String, Object> map = Map.of(
+            Name.NAME,"Professor User",
+            DaktelaSchema.ATTR_ALIAS, "alias Prof",
+            DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof",
+            DaktelaSchema.ATTR_PASSWORD, "pwdPWD",
+            DaktelaSchema.ATTR_CLID, "+420 000 111 222",
+            DaktelaSchema.ATTR_EMAIL, "prof@uni.com"
+        );
 
         Set<Attribute> set =createAttributeSetFromMap(map);
 
@@ -174,7 +174,7 @@ class DaktelaConnectorUnitTest {
         Uid returnedUid = connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
 
         verify(mockConnection).updateRecord(userCaptor.capture());
-        assertUserCaptorFields(map, userCaptor.getValue(), "user1", " user fields ");
+        assertUserFields(map, userCaptor.getValue(), "user1", " user fields ");
         assertEquals("user1", returnedUid.getUidValue(), "check returned uid");
     }
 
@@ -206,11 +206,11 @@ class DaktelaConnectorUnitTest {
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
         DaktelaConnection.setINST(mockConnection);
-        Map<String, Object> map = new HashMap<>(){{
-            put(Uid.NAME,"NewUser");
-            put(Name.NAME,"Professor User");
+        Map<String, Object> map = Map.of(
+            Uid.NAME,"NewUser",
+            Name.NAME,"Professor User"
 
-        }};
+        );
         ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
             Set<Attribute> set =createAttributeSetFromMap(map);
             connector.update(new ObjectClass("User"), new Uid("user1"), set, null);

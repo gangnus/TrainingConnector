@@ -1,5 +1,6 @@
 package cz.ami.connector.daktela;
 
+import com.google.gson.Gson;
 import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
@@ -14,12 +15,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
+import static cz.ami.connector.daktela.DaktelaConnectorUnitTest.assertUserFields;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DaktelaConnectorFunctionalTest {
-
+    static private final Gson gson = new Gson();
     static Set<AttributeDelta> createDeltaSetFromMap(Map<String, Object> map){
         Set<AttributeDelta> set = new HashSet<>();
         map.forEach((name,value) -> {
@@ -48,19 +50,25 @@ class DaktelaConnectorFunctionalTest {
 
         ServerForUnitTesting server = new ServerForUnitTesting();
         server.launch();
-        Map<String, Object> map = new HashMap<>(){{
-            put(Name.NAME,"Professor User");
-            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
+        Map<String, Object> map = Map.of(
+            Name.NAME,"Professor User",
+            DaktelaSchema.ATTR_ALIAS, "alias Prof"
 
-        }};
+        );
 
         Set<Attribute> set =createAttributeSetFromMap(map);
 
         connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
+
+        // check request body
+        String jsonString = server.getRequestBody();
+        User userSent = gson.fromJson(jsonString, User.class);
+        assertUserFields(map, userSent, "user1", " some base user fields ");
         server.stop();
     }
 
     /** -------------- Functional test update - a failed update of a user
+     *
      *
      */
     @Test
@@ -84,7 +92,7 @@ class DaktelaConnectorFunctionalTest {
         ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), new Uid("user2"), set, null);
             server.stop();
-        });
+        },"An exception must be thrown, due to the wrong response status code");
         server.stop();
     }
 
