@@ -30,20 +30,20 @@ public class ServerForTesting {
     }
 
     public void launch() throws Exception {
-        LOG.error("launching the server...");
-        LOG.error("setting contexts...");
+        LOG.debug("launching the server...");
+        LOG.debug("setting contexts...");
         server.createContext("/api/v6/users/Novak.json", new ReadNovakHandler());
         server.createContext("/api/v6/users/Vlcek.json", new ReadVlcekHandler());
         server.createContext("/api/v6/users.json", new ReadNovakVlcekHandler());
         server.createContext("/api/v6/users/user1.json", new CorrectUpdateHandler());
         server.createContext("/api/v6/users/user2.json", new FailedUpdateHandler());
-        LOG.error("setting executors...");
+        LOG.debug("setting executors...");
         ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
         server.setExecutor(threadPoolExecutor);
         //server.setExecutor(null); // creates a default executor
-        LOG.error("server starting...");
+        LOG.debug("server starting...");
         server.start();
-        LOG.error("server started.");
+        LOG.debug("server started.");
     }
     public void stop(){
         server.stop(1);
@@ -63,7 +63,7 @@ public class ServerForTesting {
     class FailedUpdateHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            LOG.error("starting the handle");
+            LOG.debug("starting the handle");
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("PUT")) {
                 setResponse(exchange, 300, "failed");
@@ -104,7 +104,7 @@ public class ServerForTesting {
         }
     }
     private void setResponse(HttpExchange exchange, int stateCode, String responseBody) {
-        LOG.error("crerating the response");
+        LOG.debug("crerating the response");
         byte[] bodyBytes = null;
         try {
             bodyBytes = responseBody.getBytes("UTF-8");
