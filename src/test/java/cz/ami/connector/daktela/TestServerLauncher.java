@@ -1,4 +1,6 @@
 package cz.ami.connector.daktela;
 public class TestServerLauncher {
-    ServerForTesting..createServerForTesting();
+    static public void main(String[] arg) throws Exception {
+        ServerForTesting.createServerForTesting();
+    }
 }
