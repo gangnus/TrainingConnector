@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DaktelaConnectorUnitTest {
+class ConnectorUnitTest {
     @Mock
     DaktelaConnection mockConnection;
     @InjectMocks
@@ -56,8 +56,6 @@ class DaktelaConnectorUnitTest {
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
         DaktelaConnection.setINST(mockConnection);
-        //TODO
-        // Map.of
         Map<String, Object> map = Map.of(
             Uid.NAME,"user1",
             Name.NAME, "Professor User",

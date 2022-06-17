@@ -1,69 +1,20 @@
 package cz.ami.connector.daktela;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import cz.ami.connector.daktela.model.User;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DaktelaConnectionTest {
-
-    String uriSource = "https://c15be332-489e-455e-81f0-146b386abbad.mock.pstmn.io";
-
-
-    public void initConfiguration(){
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        configuration.setServiceAddress(uriSource);
-        configuration.setTimeout(100);
-        DaktelaConnection.setNewINST(configuration);
-    }
-    @Disabled
+class ModelTest {
     @Test
-    public void TestReadThroughConnection() throws IOException, URISyntaxException, InterruptedException {
-        HttpClient client = HttpClient.newBuilder().build();
-        initConfiguration();
-        User user = DaktelaConnection.getINST().read("Novak", User.class);
-        String jsonStringMust = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
-        Gson gson = new Gson();
-        String jsonStringGot = gson.toJson(user);
-        assertEquals(jsonStringGot, jsonStringMust);
-    }
-    @Disabled
-    @Test
-    public void TestReadAllThroughConnection() throws IOException {
-        HttpClient client = HttpClient.newBuilder().build();
-
-        List<User> usersFromServer = DaktelaConnection.getINST().readAll(User.class);
-        String jsonStringMust =
-                "[" +
-                        new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes()) +
-                        ", " +
-                        new String(getClass().getClassLoader().getResourceAsStream("user2.json").readAllBytes()) +
-                        "]";
-
-        Gson gson = new Gson();
-        Type userListType = new TypeToken<ArrayList<User>>(){}.getType();
-        List<User> usersFromFiles  = new ArrayList<>(gson.fromJson(jsonStringMust, userListType));
-
-        assertEquals(usersFromServer.size(), 2);
-        assertEquals(usersFromServer.get(0).getName(), usersFromFiles.get(0).getName());
-        assertEquals(usersFromServer.get(0).getDescription(), usersFromFiles.get(0).getDescription());
-        assertEquals(usersFromServer.get(1).getName(), usersFromFiles.get(1).getName());
-        assertEquals(usersFromServer.get(1).getDescription(), usersFromFiles.get(1).getDescription());
-    }
-    @Disabled
-    @Test
-    public void TestStructure() throws IOException {
-        String jsonString = new String(getClass().getClassLoader().getResourceAsStream("user1.json").readAllBytes());
+    public void TestUserStructure() throws IOException {
+        String jsonString = Files.readString(Path.of("novak.json"), StandardCharsets.UTF_8);
         Gson gson = new Gson();
         User user = gson.fromJson(jsonString, User.class);
         assertEquals(user.getAlias(), "NJ");

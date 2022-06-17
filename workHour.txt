@@ -15,6 +15,9 @@ Petr
 13.6.2022: 6h Update & Create. Testing by Mockito.
 14.6.2022: 8h Debugging of call of Update through IDM
 15.6.2022: 8h Debugging of call of Update through IDM, testing Connector by ServerForUnitTesting
+16.6.2022: 8h Debugging of call of Create through IDM, testing Connector by ServerForUnitTesting
+17.6.2022: 8h Debugging of call of all 4 commands of connector, connection. Unit and functional testing through ServerForUnitTesting.
+                Problems with IntelliJ.
 
 Tomas
 02.6.2022: 3,5h

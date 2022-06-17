@@ -13,12 +13,12 @@ public class DaktelaConfiguration extends AbstractConfiguration {
     private Integer timeout = 100;
 
     public DaktelaConfiguration() {
-        //TODO default values
+        // default values
     }
     
     @Override
     public void validate() {
-        // TODO Auto-generated method stub
+        // Auto-generated method stub
     }
     
     @ConfigurationProperty(order = 10, displayMessageKey = "serviceAddress.display",

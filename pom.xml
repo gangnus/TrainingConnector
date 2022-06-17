@@ -21,7 +21,7 @@
 
     <artifactId>connector-daktela</artifactId>
     <groupId>cz.ami</groupId>
-    <version>1.0.4</version>
+    <version>1.0.6</version>
     <packaging>jar</packaging>
 
     <name>Daktela Connector</name>

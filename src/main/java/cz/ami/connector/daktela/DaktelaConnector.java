@@ -132,10 +132,17 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
 
         if (set!= null){
             for (Attribute attribute : set) {
-                //TODO safe log call
-                LOG.debug("name of an attribute = " + attribute.getName() + ",  value=" + attribute.getValue().get(0).toString());
-                String value = attribute.getValue().get(0).toString();
+
                 String name = attribute.getName();
+                String value = null;
+                try {
+                    value = attribute.getValue().get(0).toString();
+                } catch(Exception e){
+                    LOG.warn("name of an attribute = " + name + " has no values. err="+ e.getMessage());
+                    LOG.warn("attribute = " + attribute.toString());
+                    continue;
+                }
+
                 // __UID__
                 if (name.equals(Uid.NAME)) {
                     uid = new Uid(value);
@@ -258,7 +265,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
     @Override
     public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> set, OperationOptions operationOptions) {
         LOG.debug("Start updateDelta of the user with UID = " + uid.getUidValue());
-
+//
         User user = new User();
         user.setName(uid.getUidValue());
         Boolean userChanged = false;

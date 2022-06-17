@@ -6,22 +6,22 @@ import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
-import static cz.ami.connector.daktela.DaktelaConnectorUnitTest.assertUserFields;
+import static cz.ami.connector.daktela.ConnectorUnitTest.assertUserFields;
+import static cz.ami.connector.daktela.ServerForTesting.createServerForTesting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@ExtendWith(MockitoExtension.class)
-class DaktelaConnectorFunctionalTest {
+class ConnectorFunctionalTest {
     static private final Gson gson = new Gson();
+    DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector();
+    ServerForTesting server = createServerForTesting();
+
+    ConnectorFunctionalTest() throws Exception {
+    }
+
     static Set<AttributeDelta> createDeltaSetFromMap(Map<String, Object> map){
         Set<AttributeDelta> set = new HashSet<>();
         map.forEach((name,value) -> {
@@ -43,13 +43,7 @@ class DaktelaConnectorFunctionalTest {
     @Test
     public void funcTestUpdateSomeBaseFieldsCorrect() throws Exception {
 
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        DaktelaConnector connector = new DaktelaConnector();
-        connector.init(configuration);
-        configuration.setServiceAddress("http://localhost:8001");
-
-        ServerForUnitTesting server = new ServerForUnitTesting();
-        server.launch();
+        assertNotNull(server, " test server at method start");
         Map<String, Object> map = Map.of(
             Name.NAME,"Professor User",
             DaktelaSchema.ATTR_ALIAS, "alias Prof"
@@ -61,10 +55,11 @@ class DaktelaConnectorFunctionalTest {
         connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
 
         // check request body
+        assertNotNull(server, " test server after tested call ");
         String jsonString = server.getRequestBody();
+        assertNotNull(jsonString, " response json string ");
         User userSent = gson.fromJson(jsonString, User.class);
         assertUserFields(map, userSent, "user1", " some base user fields ");
-        server.stop();
     }
 
     /** -------------- Functional test update - a failed update of a user
@@ -73,27 +68,18 @@ class DaktelaConnectorFunctionalTest {
      */
     @Test
     public void funcTestUpdateSomeBaseFieldsFailed() throws Exception {
+        Map<String, Object> map = Map.of(
+                Name.NAME,"Professor User",
+                DaktelaSchema.ATTR_ALIAS, "alias Prof"
 
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        DaktelaConnector connector = new DaktelaConnector();
-        connector.init(configuration);
-        configuration.setServiceAddress("http://localhost:8001");
-
-        ServerForUnitTesting server = new ServerForUnitTesting();
-        server.launch();
-        Map<String, Object> map = new HashMap<>(){{
-            put(Name.NAME,"Professor User");
-            put(DaktelaSchema.ATTR_ALIAS, "alias Prof");
-
-        }};
+        );
 
         Set<Attribute> set =createAttributeSetFromMap(map);
 
         ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), new Uid("user2"), set, null);
-            server.stop();
         },"An exception must be thrown, due to the wrong response status code");
-        server.stop();
+
     }
 
 }

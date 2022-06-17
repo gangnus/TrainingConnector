@@ -33,7 +33,10 @@ public class DaktelaConnection {
 
     private DaktelaConfiguration configuration;
 
-    static private final HttpClient client = HttpClient.newHttpClient();
+    static private final HttpClient client = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
+            .build();
+
 
     public static final String URI_AFTER_NAME = ".json";
 
@@ -224,8 +227,11 @@ public class DaktelaConnection {
         }
         HttpRequest request = requestBuilder.build();
         try {
-            if(LOG.isTraceEnabled()) {
-                LOG.trace("------------- request = " + request.toString());
+            //TODO to trace, create setting log level
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("------------- request = " + request.toString());
+                LOG.debug("request body= " + request.bodyPublisher().toString());
+
             }
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
@@ -239,3 +245,24 @@ public class DaktelaConnection {
         return null;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
