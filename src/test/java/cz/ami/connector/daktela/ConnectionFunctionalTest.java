@@ -24,7 +24,7 @@ class ConnectionFunctionalTest {
 
 
         User user = DaktelaConnection.getINST().read("Novak", User.class);
-        String jsonStringMust = new String(getClass().getClassLoader().getResourceAsStream("novak.json").readAllBytes());
+        String jsonStringMust = TestResourceFilesReader.readStringContentFromFile("novak.json");
 
         User userFromFile  = gson.fromJson(jsonStringMust, User.class);
         assertEquals(userFromFile.getName(), user.getName());
@@ -41,9 +41,9 @@ class ConnectionFunctionalTest {
 
         String jsonStringMust =
                 "[" +
-                        new String(getClass().getClassLoader().getResourceAsStream("novak.json").readAllBytes()) +
+                        TestResourceFilesReader.readStringContentFromFile("novak.json") +
                         ", " +
-                        new String(getClass().getClassLoader().getResourceAsStream("vlcek.json").readAllBytes()) +
+                        TestResourceFilesReader.readStringContentFromFile("vlcek.json") +
                         "]";
 
         Type userListType = new TypeToken<ArrayList<User>>(){}.getType();

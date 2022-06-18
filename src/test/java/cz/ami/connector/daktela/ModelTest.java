@@ -14,104 +14,104 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModelTest {
     @Test
     public void TestUserStructure() throws IOException {
-        String jsonString = Files.readString(Path.of("novak.json"), StandardCharsets.UTF_8);
+        String jsonString = TestResourceFilesReader.readStringContentFromFile("novak.json");
         Gson gson = new Gson();
         User user = gson.fromJson(jsonString, User.class);
-        assertEquals(user.getAlias(), "NJ");
-        assertEquals(user.getName(), "Novak");
-        assertEquals(user.getTitle(), "Novák Jan");
+        assertEquals( "NJ",user.getAlias());
+        assertEquals( "Novak",user.getName());
+        assertEquals( "Novák Jan",user.getTitle());
 
-        assertEquals(user.getRole().get(0).getName(), "admin");
-        assertEquals(user.getRole().get(0).getTitle(), "Administrator");
-        assertEquals(user.getRole().get(0).getDescription(), "rights to change logins");
-        assertEquals(user.getRole().get(0).getShortcuts(), "");
-        assertEquals(user.getRole().get(0).getOptions(), "");
+        assertEquals( "admin",user.getRole().get(0).getName());
+        assertEquals( "Administrator",user.getRole().get(0).getTitle());
+        assertEquals( "rights to change logins",user.getRole().get(0).getDescription());
+        assertEquals( "",user.getRole().get(0).getShortcuts());
+        assertEquals( "",user.getRole().get(0).getOptions());
 
-        assertEquals(user.getRole().get(1).getName(), "mg");
-        assertEquals(user.getRole().get(1).getTitle(), "Manager");
-        assertEquals(user.getRole().get(1).getDescription(), "rights to sort logins");
-        assertEquals(user.getRole().get(1).getShortcuts(), "{\"ctrl+a\":\"command1\"}");
-        assertEquals(user.getRole().get(1).getOptions(), "{\"o32\":\"high\"}");
+        assertEquals( "mg",user.getRole().get(1).getName());
+        assertEquals( "Manager",user.getRole().get(1).getTitle());
+        assertEquals( "rights to sort logins",user.getRole().get(1).getDescription());
+        assertEquals( "{\"ctrl+a\":\"command1\"}",user.getRole().get(1).getShortcuts());
+        assertEquals( "{\"o32\":\"high\"}",user.getRole().get(1).getOptions());
 
-        assertEquals(user.getProfile().get(0).getName(), "newbie");
-        assertEquals(user.getProfile().get(0).getTitle(), "newbie");
-        assertEquals(user.getProfile().get(0).getDescription(), "newbie");
-        assertEquals(user.getProfile().get(0).getMaxActivities(), 1);
-        assertEquals(user.getProfile().get(0).getMaxOutRecords(), 2);
-        assertEquals(user.getProfile().get(0).getDeleteMissedActivity(), false);
-        assertEquals(user.getProfile().get(0).getNoQueueCallsAllowed(), false);
-        assertEquals(user.getProfile().get(0).getCanTransferCall(), "None");
-        assertEquals(user.getProfile().get(0).getOptions(), "");
-        assertEquals(user.getProfile().get(0).getCustomViews(), "");
+        assertEquals( "newbie",user.getProfile().get(0).getName());
+        assertEquals( "newbie",user.getProfile().get(0).getTitle());
+        assertEquals( "newbie",user.getProfile().get(0).getDescription());
+        assertEquals( 1,user.getProfile().get(0).getMaxActivities());
+        assertEquals( 2,user.getProfile().get(0).getMaxOutRecords());
+        assertEquals( false,user.getProfile().get(0).getDeleteMissedActivity());
+        assertEquals( false,user.getProfile().get(0).getNoQueueCallsAllowed());
+        assertEquals( "None",user.getProfile().get(0).getCanTransferCall());
+        assertEquals( "",user.getProfile().get(0).getOptions());
+        assertEquals( "",user.getProfile().get(0).getCustomViews());
 
-        assertEquals(user.getProfile().get(1).getName(), "oldie");
-        assertEquals(user.getProfile().get(1).getTitle(), "oldie");
-        assertEquals(user.getProfile().get(1).getDescription(), "oldie");
-        assertEquals(user.getProfile().get(1).getMaxActivities(), 3);
-        assertEquals(user.getProfile().get(1).getMaxOutRecords(), 10);
-        assertEquals(user.getProfile().get(1).getDeleteMissedActivity(), true);
-        assertEquals(user.getProfile().get(1).getNoQueueCallsAllowed(), true);
-        assertEquals(user.getProfile().get(1).getCanTransferCall(), "Only assisted transfer");
-        assertEquals(user.getProfile().get(1).getOptions(), "{\"o1\":\"+\"}");
-        assertEquals(user.getProfile().get(1).getCustomViews(), "{\"fullscreen\":\"forbidden\"}");
+        assertEquals( "oldie",user.getProfile().get(1).getName());
+        assertEquals( "oldie",user.getProfile().get(1).getTitle());
+        assertEquals( "oldie",user.getProfile().get(1).getDescription());
+        assertEquals( 3,user.getProfile().get(1).getMaxActivities());
+        assertEquals( 10,user.getProfile().get(1).getMaxOutRecords());
+        assertEquals( true,user.getProfile().get(1).getDeleteMissedActivity());
+        assertEquals( true,user.getProfile().get(1).getNoQueueCallsAllowed());
+        assertEquals( "Only assisted transfer",user.getProfile().get(1).getCanTransferCall());
+        assertEquals( "{\"o1\":\"+\"}",user.getProfile().get(1).getOptions());
+        assertEquals( "{\"fullscreen\":\"forbidden\"}",user.getProfile().get(1).getCustomViews());
 
-        assertEquals(user.getNpsScore(), 25.3f);
-        assertEquals(user.getDescription(), "the most problem user");
-        assertEquals(user.getCallSteeringDescription(), "don't touch!");
-        assertEquals(user.getPassword(), "pwd");
-        assertEquals(user.getExtension(), "ext");
+        assertEquals( 25.3f,user.getNpsScore());
+        assertEquals( "the most problem user",user.getDescription());
+        assertEquals( "don't touch!",user.getCallSteeringDescription());
+        assertEquals( "pwd",user.getPassword());
+        assertEquals( "ext",user.getExtension());
 
-        assertEquals(user.getAcl().get(0).getName(), "read");
-        assertEquals(user.getAcl().get(0).getTitle(), "reading");
-        assertEquals(user.getAcl().get(0).getTime(), "300");
-        assertEquals(user.getAcl().get(0).getRules(), "");
+        assertEquals( "read",user.getAcl().get(0).getName());
+        assertEquals( "reading",user.getAcl().get(0).getTitle());
+        assertEquals( "300",user.getAcl().get(0).getTime());
+        assertEquals( "",user.getAcl().get(0).getRules());
 
-        assertEquals(user.getAcl().get(1).getName(), "write");
-        assertEquals(user.getAcl().get(1).getTitle(), "writing");
-        assertEquals(user.getAcl().get(1).getTime(), "600");
-        assertEquals(user.getAcl().get(1).getRules(), "");
-
-
-        assertEquals(user.getExtState(), "online");
-        assertEquals(user.getClid(), "+420 155 111 258");
-        assertEquals(user.getIfStaticLogin(), true);
-        assertEquals(user.getAllowRecordingInterruption(), true);
-        assertEquals(user.getRecordAtCallStart(), "Do not record");
-
-        assertEquals(user.getAlgo().getName(), "algoName");
-        assertEquals(user.getAlgo().getTitle(), "algoTitle");
-
-        assertEquals(user.getAlgo().getIntegration().getName(), "integrName");
-
-        assertEquals(user.getAlgo().getIntegration().getType(), "AUTH");
-        assertEquals(user.getAlgo().getIntegration().getTitle(), "integrTitle");
-        assertEquals(user.getAlgo().getIntegration().getDescription(), "integrDesc");
-
-        assertEquals(user.getAlgo().getIntegration().getAuthInfo(), "integrInfo");
-        assertEquals(user.getAlgo().getIntegration().getImageName(), "integrImageName");
-        assertEquals(user.getAlgo().getIntegration().getIcon(), "integrIconName");
-        assertEquals(user.getAlgo().getIntegration().getActive(), false);
-        assertEquals(user.getAlgo().getIntegration().getAuth(), false);
-        assertEquals(user.getAlgo().getIntegration().getConfig(), false);
-
-        assertEquals(user.getAlgo().getIntegration().getError(), "{\"error\":\"111\"}");
+        assertEquals( "write",user.getAcl().get(1).getName());
+        assertEquals( "writing",user.getAcl().get(1).getTitle());
+        assertEquals( "600",user.getAcl().get(1).getTime());
+        assertEquals( "",user.getAcl().get(1).getRules());
 
 
-        assertEquals(user.getAlgo().getActive(), true);
-        assertEquals(user.getAlgo().getAuth(), "{\"auth\":\"algoAuth\"}");
-        assertEquals(user.getAlgo().getConfig(), "{\"config\":\"algoConfig\"}");
+        assertEquals( "online",user.getExtState());
+        assertEquals( "+420 155 111 258",user.getClid());
+        assertEquals( true,user.getIfStaticLogin());
+        assertEquals( true,user.getAllowRecordingInterruption());
+        assertEquals( "Do not record",user.getRecordAtCallStart());
 
-        assertEquals(user.getEmail(), "name@server.cz");
-        assertEquals(user.getEmailAuth(), "name2@server2.com");
-        assertEquals(user.getIcon(), "iconAsString");
+        assertEquals( "algoName",user.getAlgo().getName());
+        assertEquals( "algoTitle",user.getAlgo().getTitle());
 
-        assertEquals(user.getOptions().getSign(), "<p>me</p>");
-        assertEquals(user.getOptions().getTarget(), "none");
+        assertEquals( "integrName",user.getAlgo().getIntegration().getName());
 
-        assertEquals(user.getBackofficeUser(), true);
-        assertEquals(user.getForwardingNumber(), "+420 123 456 789");
-        assertEquals(user.getDeactivated(), false);
-        assertEquals(user.getDeleted(), false);
+        assertEquals( "AUTH",user.getAlgo().getIntegration().getType());
+        assertEquals( "integrTitle",user.getAlgo().getIntegration().getTitle());
+        assertEquals( "integrDesc",user.getAlgo().getIntegration().getDescription());
+
+        assertEquals( "integrInfo",user.getAlgo().getIntegration().getAuthInfo());
+        assertEquals( "integrImageName",user.getAlgo().getIntegration().getImageName());
+        assertEquals( "integrIconName",user.getAlgo().getIntegration().getIcon());
+        assertEquals( false,user.getAlgo().getIntegration().getActive());
+        assertEquals( false,user.getAlgo().getIntegration().getAuth());
+        assertEquals( false,user.getAlgo().getIntegration().getConfig());
+
+        assertEquals( "{\"error\":\"111\"}",user.getAlgo().getIntegration().getError());
+
+
+        assertEquals( true,user.getAlgo().getActive());
+        assertEquals( "{\"auth\":\"algoAuth\"}",user.getAlgo().getAuth());
+        assertEquals( "{\"config\":\"algoConfig\"}",user.getAlgo().getConfig());
+
+        assertEquals( "name@server.cz",user.getEmail());
+        assertEquals( "name2@server2.com",user.getEmailAuth());
+        assertEquals( "iconAsString",user.getIcon());
+
+        assertEquals( "<p>me</p>",user.getOptions().getSign());
+        assertEquals( "none",user.getOptions().getTarget());
+
+        assertEquals( true,user.getBackofficeUser());
+        assertEquals( "+420 123 456 789",user.getForwardingNumber());
+        assertEquals( false,user.getDeactivated());
+        assertEquals( false,user.getDeleted());
     }
 
 }

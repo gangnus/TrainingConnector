@@ -19,8 +19,11 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collector;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.stream.Collector.*;
+import static java.util.stream.Collectors.joining;
 
 
 public class DaktelaConnection {
@@ -230,7 +233,7 @@ public class DaktelaConnection {
             //TODO to trace, create setting log level
             if(LOG.isDebugEnabled()) {
                 LOG.debug("------------- request = " + request.toString());
-                LOG.debug("request body= " + request.bodyPublisher().toString());
+                LOG.debug("request body= " + request.bodyPublisher().stream().map(Object::toString).collect(joining()));
 
             }
             return client.send(request, HttpResponse.BodyHandlers.ofString());

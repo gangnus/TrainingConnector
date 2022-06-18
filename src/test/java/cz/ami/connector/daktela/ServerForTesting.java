@@ -75,7 +75,7 @@ public class ServerForTesting {
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
-                setResponse(exchange, 200, new String(getClass().getClassLoader().getResourceAsStream("novak.json").readAllBytes()));
+                setResponse(exchange, 200, TestResourceFilesReader.readStringContentFromFile("novak.json"));
             }
         }
     }
@@ -84,7 +84,7 @@ public class ServerForTesting {
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
-                setResponse(exchange, 200, new String(getClass().getClassLoader().getResourceAsStream("vlcek.json").readAllBytes()));
+                setResponse(exchange, 200, TestResourceFilesReader.readStringContentFromFile("vlcek.json"));
             }
         }
     }
@@ -95,9 +95,9 @@ public class ServerForTesting {
             if (requestMethod.equalsIgnoreCase("GET")) {
                 String jsonString =
                         "[" +
-                                new String(getClass().getClassLoader().getResourceAsStream("novak.json").readAllBytes()) +
+                                TestResourceFilesReader.readStringContentFromFile("novak.json") +
                                 ", " +
-                                new String(getClass().getClassLoader().getResourceAsStream("vlcek.json").readAllBytes()) +
+                                TestResourceFilesReader.readStringContentFromFile("vlcek.json") +
                                 "]";
                 setResponse(exchange, 200, jsonString);
             }
