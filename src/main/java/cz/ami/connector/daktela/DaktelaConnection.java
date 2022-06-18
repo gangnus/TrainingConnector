@@ -16,9 +16,11 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.Flow;
 import java.util.stream.Collector;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -173,7 +175,7 @@ public class DaktelaConnection {
     public void createRecord( Item item) {
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " creation ";
-        HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(item.getName(), item.getClass()), opMessage)
+        HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAllItems(item.getClass()), opMessage)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)));
         HttpResponse<String> response = prepareResponse(requestBuilder, opMessage);
         checkResponseStatus("Creation ", item.getClass(), response);
@@ -190,6 +192,7 @@ public class DaktelaConnection {
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(item.getName(), item.getClass()),opMessage)
                 .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)));
         HttpResponse<String> response = prepareResponse(requestBuilder, opMessage);
+        LOG.debug("Response accepted");
         checkResponseStatus("Update ", item.getClass(), response);
     }
 
@@ -233,7 +236,8 @@ public class DaktelaConnection {
             //TODO to trace, create setting log level
             if(LOG.isDebugEnabled()) {
                 LOG.debug("------------- request = " + request.toString());
-                LOG.debug("request body= " + request.bodyPublisher().stream().map(Object::toString).collect(joining()));
+
+                LOG.debug("request body= " + requestBodyToString(request));
 
             }
             return client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -246,6 +250,37 @@ public class DaktelaConnection {
         }
         // never really reached
         return null;
+    }
+    static final class StringSubscriber implements Flow.Subscriber<ByteBuffer> {
+        final HttpResponse.BodySubscriber<String> wrapped;
+        StringSubscriber(HttpResponse.BodySubscriber<String> wrapped) {
+            this.wrapped = wrapped;
+        }
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            wrapped.onSubscribe(subscription);
+        }
+        @Override
+        public void onNext(ByteBuffer item) { wrapped.onNext(List.of(item)); }
+        @Override
+        public void onError(Throwable throwable) { wrapped.onError(throwable); }
+        @Override
+        public void onComplete() { wrapped.onComplete(); }
+
+    }
+    static String requestBodyToString(HttpRequest request){
+        if(request.bodyPublisher().isPresent()){
+        String requestBodyAsString = request.bodyPublisher().map(p -> {
+            var bodySubscriber = HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
+            var flowSubscriber = new StringSubscriber(bodySubscriber);
+            p.subscribe(flowSubscriber);
+            return bodySubscriber.getBody().toCompletableFuture().join();
+        }).get();
+        return requestBodyAsString;
+        } else {
+            return "empty request body";
+        }
+
     }
 }
 

@@ -13,16 +13,8 @@ public class StandaloneTestServerLauncher {
     @Test
     public void launch() throws Exception {
         ServerForTesting.createServerForTesting();
-    }
-    /**
-     * This "test" is for stopping the standalone test server
-     * This is not a real unit test. @Disabled annotation should never been removed
-     * @throws Exception
-     */
-    @Disabled
-    @Test
-    public void stop() throws Exception {
-        ServerForTesting serverforTesting = ServerForTesting.createServerForTesting();
-        serverforTesting.stop();
+        while(true){
+            Thread.sleep(100);
+        }
     }
 }

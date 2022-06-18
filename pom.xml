@@ -21,7 +21,7 @@
 
     <artifactId>connector-daktela</artifactId>
     <groupId>cz.ami</groupId>
-    <version>1.0.6</version>
+    <version>1.0.8</version>
     <packaging>jar</packaging>
 
     <name>Daktela Connector</name>
@@ -32,7 +32,6 @@
         <bundle.name>${project.groupId}.${project.artifactId}</bundle.name>
         <bundle.version>${project.version}</bundle.version>
         <project.source.version>11</project.source.version>
-        <project.build.sourceEncoding>Cp1250</project.build.sourceEncoding>
         <connId.version>1.5.0.18</connId.version>
         <midpoint.version>4.4.1</midpoint.version>
     </properties>

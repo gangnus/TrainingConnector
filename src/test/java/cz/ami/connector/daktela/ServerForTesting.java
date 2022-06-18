@@ -13,7 +13,6 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.jetbrains.annotations.NotNull;
 
 public class ServerForTesting {
     private static final Trace LOG = TraceManager.getTrace(ServerForTesting.class);
@@ -34,7 +33,7 @@ public class ServerForTesting {
         LOG.debug("setting contexts...");
         server.createContext("/api/v6/users/Novak.json", new ReadNovakHandler());
         server.createContext("/api/v6/users/Vlcek.json", new ReadVlcekHandler());
-        server.createContext("/api/v6/users.json", new ReadNovakVlcekHandler());
+        server.createContext("/api/v6/users.json", new ReadAllOrCreateHandler());
         server.createContext("/api/v6/users/user1.json", new CorrectUpdateHandler());
         server.createContext("/api/v6/users/user2.json", new FailedUpdateHandler());
         LOG.debug("setting executors...");
@@ -57,6 +56,8 @@ public class ServerForTesting {
             if (requestMethod.equalsIgnoreCase("PUT")) {
                 setRequestBody(exchange);
                 setResponse(exchange, 200, "OK");
+            } else {
+                setResponse(exchange, 404, "unknown URI");
             }
         }
     }
@@ -67,6 +68,8 @@ public class ServerForTesting {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("PUT")) {
                 setResponse(exchange, 300, "failed");
+            } else {
+                setResponse(exchange, 404, "unknown URI");
             }
         }
     }
@@ -76,6 +79,8 @@ public class ServerForTesting {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
                 setResponse(exchange, 200, TestResourceFilesReader.readStringContentFromFile("novak.json"));
+            } else {
+                setResponse(exchange, 404, "unknown URI");
             }
         }
     }
@@ -85,14 +90,17 @@ public class ServerForTesting {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
                 setResponse(exchange, 200, TestResourceFilesReader.readStringContentFromFile("vlcek.json"));
+            } else {
+                setResponse(exchange, 404, "unknown URI");
             }
         }
     }
-    class ReadNovakVlcekHandler implements HttpHandler {
+    class ReadAllOrCreateHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
+                // Read All Users
                 String jsonString =
                         "[" +
                                 TestResourceFilesReader.readStringContentFromFile("novak.json") +
@@ -100,11 +108,18 @@ public class ServerForTesting {
                                 TestResourceFilesReader.readStringContentFromFile("vlcek.json") +
                                 "]";
                 setResponse(exchange, 200, jsonString);
+            } else if (requestMethod.equalsIgnoreCase("POST")) {
+                // Create a user
+                setRequestBody(exchange);
+                setResponse(exchange, 200, "OK");
+            } else {
+                setResponse(exchange, 404, "unknown URI");
             }
+
         }
     }
     private void setResponse(HttpExchange exchange, int stateCode, String responseBody) {
-        LOG.debug("crerating the response");
+        LOG.debug("creating the response");
         byte[] bodyBytes = null;
         try {
             bodyBytes = responseBody.getBytes("UTF-8");

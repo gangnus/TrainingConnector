@@ -1,5 +1,6 @@
 package cz.ami.connector.daktela;
 
+import com.evolveum.midpoint.util.logging.TraceManager;
 import com.google.gson.Gson;
 import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -42,8 +43,7 @@ class ConnectorFunctionalTest {
      */
     @Test
     public void funcTestUpdateSomeBaseFieldsCorrect() throws Exception {
-
-        assertNotNull(server, " test server at method start");
+        ServerForTesting server = createServerForTesting();
         Map<String, Object> map = Map.of(
             Name.NAME,"Professor User",
             DaktelaSchema.ATTR_ALIAS, "alias Prof"
@@ -81,5 +81,31 @@ class ConnectorFunctionalTest {
         },"An exception must be thrown, due to the wrong response status code");
 
     }
+
+    /** -------------- Functional test update - a correct update of a user
+     *
+     */
+    @Test
+    public void funcTestCreateSomeBaseFieldsCorrect() throws Exception {
+        Map<String, Object> map = Map.of(
+                Uid.NAME, "user1",
+                Name.NAME,"Professor User",
+                DaktelaSchema.ATTR_ALIAS, "alias Prof"
+
+        );
+
+        Set<Attribute> set =createAttributeSetFromMap(map);
+
+        Uid uid = connector.create(new ObjectClass("User"), set, null);
+
+        assertEquals("user1", uid.getUidValue());
+        // check request body
+        assertNotNull(server, " test server after tested call ");
+        String jsonString = server.getRequestBody();
+        assertNotNull(jsonString, " response json string ");
+        User userSent = gson.fromJson(jsonString, User.class);
+        assertUserFields(map, userSent, "user1", " some base user fields ");
+    }
+
 
 }

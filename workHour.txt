@@ -18,6 +18,8 @@ Petr
 16.6.2022: 8h Debugging of call of Create through IDM, testing Connector by ServerForUnitTesting
 17.6.2022: 8h Debugging of call of all 4 commands of connector, connection. Unit and functional testing through ServerForUnitTesting.
                 Problems with IntelliJ.
+17.6.2022: 8h Testing functional and unit. For all commands of connector, connection. Test for model. Run by maven and by IntelliJ (encoding problem resolved)
+                Log for body of prepared request implemented.
 
 Tomas
 02.6.2022: 3,5h
