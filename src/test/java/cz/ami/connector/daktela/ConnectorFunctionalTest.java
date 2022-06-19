@@ -1,8 +1,8 @@
 package cz.ami.connector.daktela;
 
-import com.evolveum.midpoint.util.logging.TraceManager;
 import com.google.gson.Gson;
 import cz.ami.connector.daktela.model.User;
+import cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
 import org.junit.jupiter.api.Assertions;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static cz.ami.connector.daktela.ConnectorUnitTest.assertUserFields;
-import static cz.ami.connector.daktela.ServerForTesting.createServerForTesting;
+import static cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting.createServerForTesting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

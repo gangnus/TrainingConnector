@@ -2,12 +2,10 @@ package cz.ami.connector.daktela;
 
 import com.google.gson.Gson;
 import cz.ami.connector.daktela.model.User;
+import cz.ami.connector.daktela.stanaloneserverlaunch.TestResourceFilesReader;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 

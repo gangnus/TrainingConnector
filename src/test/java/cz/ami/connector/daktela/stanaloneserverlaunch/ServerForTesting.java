@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela;
+package cz.ami.connector.daktela.stanaloneserverlaunch;
 
 import java.io.IOException;
 import java.io.OutputStream;

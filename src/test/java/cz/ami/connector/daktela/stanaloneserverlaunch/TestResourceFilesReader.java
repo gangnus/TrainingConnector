@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela;
+package cz.ami.connector.daktela.stanaloneserverlaunch;
 
 import org.xml.sax.InputSource;
 
@@ -9,7 +9,7 @@ import java.net.URL;
  * The fastest Java method of resource reading
  */
 public class TestResourceFilesReader {
-    static String readStringContentFromFile(String resourceName) throws IOException {
+    public static String readStringContentFromFile(String resourceName) throws IOException {
         // This way we should always have the correct classloader
         InputStream is =  Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
         ByteArrayOutputStream result = new ByteArrayOutputStream();

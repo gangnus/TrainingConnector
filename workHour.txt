@@ -1,26 +1,26 @@
 Petr
-02.6.2022: 4h User class read+fetch
-03.6.2022: 7h User - all commands
-05.6.2022: 3h User Json tree example
-06.6.2022: 8h User: read&readAll tested by Midpoint, Unit test for structure runs
-07.6.2022: 8h Basic attributes added to the connector and scheme
+02.06.2022: 4h User class read+fetch
+03.06.2022: 7h User - all commands
+05.06.2022: 3h User Json tree example
+06.06.2022: 8h User: read&readAll tested by Midpoint, Unit test for structure runs
+07.06.2022: 8h Basic attributes added to the connector and scheme
              LOGs added before exceptions throwing
              Midpoint readAll and read debugged
              Separating connection/request info from the business part.
-08.6.2022: 6h Model & http connection separated
+08.06.2022: 6h Model & http connection separated
              After old connectors cleaning IDM stopped to show any new connectors. (But registers them)
-09.6.2022: 8h Model & http connection separated, debugged, tested through midpoint
-10.6.2022: 6h update method in connection and connector
-12.6.2022: 8h Update testing by Mockito. Change from Testng to JUnit 5.
-13.6.2022: 6h Update & Create. Testing by Mockito.
-14.6.2022: 8h Debugging of call of Update through IDM
-15.6.2022: 8h Debugging of call of Update through IDM, testing Connector by ServerForUnitTesting
-16.6.2022: 8h Debugging of call of Create through IDM, testing Connector by ServerForUnitTesting
-17.6.2022: 8h Debugging of call of all 4 commands of connector, connection. Unit and functional testing through ServerForUnitTesting.
+09.06.2022: 8h Model & http connection separated, debugged, tested through midpoint
+10.06.2022: 6h update method in connection and connector
+12.06.2022: 8h Update testing by Mockito. Change from Testng to JUnit 5.
+13.06.2022: 6h Update & Create. Testing by Mockito.
+14.06.2022: 8h Debugging of call of Update through IDM
+15.06.2022: 8h Debugging of call of Update through IDM, testing Connector by ServerForUnitTesting
+16.06.2022: 8h Debugging of call of Create through IDM, testing Connector by ServerForUnitTesting
+17.06.2022: 8h Debugging of call of all 4 commands of connector, connection. Unit and functional testing through ServerForUnitTesting.
                 Problems with IntelliJ.
-18.6.2022: 8h Testing functional and unit. For all commands of connector, connection. Test for model. Run by maven and by IntelliJ (encoding problem resolved)
+18.06.2022: 8h Testing functional and unit. For all commands of connector, connection. Test for model. Run by maven and by IntelliJ (encoding problem resolved)
                 Log for body of prepared request implemented.
-
+19.06.2022: 2h Build+install+launch bat file, check of real json strings
 Tomas
 02.6.2022: 3,5h
 

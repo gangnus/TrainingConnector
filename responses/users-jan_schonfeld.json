@@ -3,7 +3,7 @@
     "result": {
         "title": "Jan Schonfeld",
         "alias": "",
-        "profile": {
+        "profile": {  TODO SINGLE
             "title": "Sklik",
             "description": "",
             "maxActivities": 5,
@@ -56,12 +56,12 @@
                 }
             },
             "name": "profiles_61e7e4a3833e2570451308",
-            "_sys": {
+            "_sys": { //TODO UNKNOWN FIELD
                 "hash": "11069",
                 "model": "profiles"
             }
         },
-        "role": {
+        "role": { //TODO SINGLE
             "title": "Sklik",
             "description": "",
             "options": {
@@ -151,7 +151,7 @@
         "description": "",
         "call_steering_description": "",
         "extension": "501",
-        "acl": null,
+        "acl": null, // TODO SINGLE? ARRAY?
         "extension_state": "offline",
         "clid": "",
         "static": false,
@@ -176,7 +176,7 @@
             "hash": null,
             "model": "users"
         },
-        "extensions": [
+        "extensions": [  //TODO ARRAY INSTEAD OF SINGLE
             {
                 "name": "501",
                 "password": "VyRugx0Ql8",

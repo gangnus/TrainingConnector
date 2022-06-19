@@ -1,5 +1,6 @@
 package cz.ami.connector.daktela;
 
+import cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting;
 import org.jetbrains.annotations.NotNull;
 
 public class ConnectorForTest {

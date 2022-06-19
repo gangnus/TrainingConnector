@@ -3,12 +3,14 @@ package cz.ami.connector.daktela;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import cz.ami.connector.daktela.model.User;
+import cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting;
+import cz.ami.connector.daktela.stanaloneserverlaunch.TestResourceFilesReader;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static cz.ami.connector.daktela.ServerForTesting.createServerForTesting;
+import static cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting.createServerForTesting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConnectionFunctionalTest {
