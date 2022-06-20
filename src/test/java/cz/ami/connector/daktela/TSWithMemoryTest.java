@@ -3,7 +3,6 @@ package cz.ami.connector.daktela;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import cz.ami.connector.daktela.model.User;
-import cz.ami.connector.daktela.testserver.SimpleUser;
 import cz.ami.connector.daktela.testserver.TSWithConstantResponses;
 import cz.ami.connector.daktela.testserver.TSWithMemory;
 import org.identityconnectors.framework.common.objects.Attribute;
@@ -36,8 +35,8 @@ public class TSWithMemoryTest {
 
     @Test
     public void changeItemByJsonStringText(){
-        SimpleUser user = new SimpleUser("Janička","Jana Velká","the first to be tested","Cihla", "skaut", "100 200 300", "velkajana@volny.cz");
-        SimpleUser userChanged = TSWithMemory.changeItemByJsonString(user, "{\"description\"=\"the second to be tested\"}");
+        User user = new User("Janička","Jana Velká","the first to be tested","Cihla", "skaut", "100 200 300", "velkajana@volny.cz");
+        User userChanged = TSWithMemory.changeItemByJsonString(user, "{\"description\"=\"the second to be tested\"}");
         assertEquals("Janička", userChanged.getName());
         assertEquals("the second to be tested", userChanged.getDescription());
         userChanged = TSWithMemory.changeItemByJsonString(user, "{\"description\"=null}");
@@ -75,7 +74,7 @@ public class TSWithMemoryTest {
         assertNotNull(serverWithMemory, " test server after tested call ");
         String jsonString = serverWithMemory.getRequestBody();
         assertNotNull(jsonString, " response json string ");
-        SimpleUser userSent = gson.fromJson(jsonString, SimpleUser.class);
+        User userSent = gson.fromJson(jsonString, User.class);
         assertUserFields(map1, userSent, "user1", " some base user fields ");
 
         Map<String, Object> map2 = Map.of(
@@ -89,14 +88,14 @@ public class TSWithMemoryTest {
 
         uid = connector.create(new ObjectClass("User"), set2, null);
         assertEquals("user2", uid.getUidValue());
-        Map<String,SimpleUser> users = TSWithMemory.loadUserMemory();
-        assertTrue(map2.containsKey("user1"),"check for user1 key");
-        assertTrue(map2.containsKey("user2"),"check for user2 key");
+        Map<String,User> users = TSWithMemory.loadUserMemory();
+        assertTrue(users.containsKey("user1"),"check for user1 key");
+        assertTrue(users.containsKey("user2"),"check for user2 key");
         assertUserFields(map1, users.get("user1"),"user1", " user1 fields ");
         assertUserFields(map2, users.get("user2"),"user2", " user2 fields ");
 
     }
-    static void assertUserFields(Map<String, Object> map, SimpleUser user, String uid, String message){
+    static void assertUserFields(Map<String, Object> map, User user, String uid, String message){
         assertEquals(uid, user.getName(),message);
         assertEquals(map.get(Name.NAME), user.getTitle(),message);
         assertEquals(map.get(DaktelaSchema.ATTR_ALIAS), user.getAlias(),message);

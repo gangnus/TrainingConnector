@@ -21,7 +21,7 @@ Petr
 18.06.2022: 8h Testing functional and unit. For all commands of connector, connection. Test for model. Run by maven and by IntelliJ (encoding problem resolved)
                 Log for body of prepared request implemented.
 19.06.2022: 2h Build+install+launch bat file, check of real json strings
-20.06.2022: 8h test server with memory for full imitation of the real Daktela Server
+20.06.2022: 9h test server with memory for full imitation of the real Daktela Server
 
 
 Tomas

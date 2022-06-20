@@ -42,5 +42,15 @@ public class User extends Item {
     private String forwardingNumber;
     private Boolean deactivated;
     private Boolean deleted;
+    public User(String name, String title, String description, String alias, String password, String clid, String email) {
+        this.setName(name);
+        this.setTitle(title);
+        this.setDescription(description);
+        this.alias = alias;
+        this.password = password;
+        this.clid = clid;
+        this.email = email;
+    }
+    public User(){}
 
 }

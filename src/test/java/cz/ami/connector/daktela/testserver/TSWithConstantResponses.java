@@ -14,6 +14,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import cz.ami.connector.daktela.tools.TestResourceFiles;
+import org.jetbrains.annotations.Nullable;
 
 public class TSWithConstantResponses {
     private static final Trace LOG = TraceManager.getTrace(TSWithConstantResponses.class);
@@ -54,8 +55,9 @@ public class TSWithConstantResponses {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("PUT")) {
-                setRequestBody(exchange);
                 setResponse(exchange, 200, "OK");
             } else {
                 setResponse(exchange, 404, "unknown URI");
@@ -67,6 +69,8 @@ public class TSWithConstantResponses {
         public void handle(HttpExchange exchange) throws IOException {
             LOG.debug("starting the handle");
             String requestMethod = exchange.getRequestMethod();
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("PUT")) {
                 setResponse(exchange, 300, "failed");
             } else {
@@ -78,6 +82,8 @@ public class TSWithConstantResponses {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("GET")) {
                 setResponse(exchange, 200, TestResourceFiles.readStringContentFromFile("novak.json"));
             } else {
@@ -89,6 +95,8 @@ public class TSWithConstantResponses {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("GET")) {
                 setResponse(exchange, 200, TestResourceFiles.readStringContentFromFile("vlcek.json"));
             } else {
@@ -100,6 +108,8 @@ public class TSWithConstantResponses {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("GET")) {
                 // Read All Users
                 String jsonString =
@@ -111,7 +121,6 @@ public class TSWithConstantResponses {
                 setResponse(exchange, 200, jsonString);
             } else if (requestMethod.equalsIgnoreCase("POST")) {
                 // Create a user
-                setRequestBody(exchange);
                 setResponse(exchange, 200, "OK");
             } else {
                 setResponse(exchange, 404, "unknown URI");
@@ -119,7 +128,7 @@ public class TSWithConstantResponses {
 
         }
     }
-    private void setResponse(HttpExchange exchange, int stateCode, String responseBody) {
+    private static void setResponse(HttpExchange exchange, int stateCode, String responseBody) {
         LOG.debug("creating the response");
         byte[] bodyBytes = null;
         try {
@@ -161,15 +170,26 @@ public class TSWithConstantResponses {
         return requestBody;
     }
 
-    private void setRequestBody(HttpExchange exchange) throws IOException {
-        this.requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);;
+    private void setRequestBody(String bodyContent) {
+        this.requestBody = bodyContent;
+    }
+    @Nullable
+    static private String getRequestBodyString(HttpExchange exchange) {
+        String requestBodyString = null;
+        try {
+            requestBodyString = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+            setResponse(exchange, 400, "Request body badly encoded." + e.getMessage() + "\n" + exchange.getRequestBody().toString());
+        }
+        return requestBodyString;
     }
 
     static public TSWithConstantResponses createServerForTesting() throws Exception {
         if (instance == null) {
             instance = new TSWithConstantResponses();
             try {
-                instance.server = HttpServer.create(new InetSocketAddress(8001), 0);
+                instance.server = HttpServer.create(new InetSocketAddress(TEST_PORT), 0);
                 instance.launch();
 
             } catch (IOException e) {

@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import cz.ami.connector.daktela.model.Item;
+import cz.ami.connector.daktela.model.User;
 import cz.ami.connector.daktela.tools.TestFilesInRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,8 +32,8 @@ public class TSWithMemory {
     private HttpServer server;
     private static TSWithMemory instance = null;
 
-    static private final String usersMemoryFileName = "SimpleUsersMemory.json";
-    private Map<String, SimpleUser> users;
+    static private final String usersMemoryFileName = "UsersMemory.json";
+    private Map<String, User> users;
     static private final String userUniversalUri = "/api/v6/users/";
     static private final String userReadAllOrCreateUri = "/api/v6/users.json";
 
@@ -48,11 +49,11 @@ public class TSWithMemory {
     /** load users from the user memory file in test resources
      *
      */
-    public static Map<String,SimpleUser> loadUserMemory() {
-        Map<String,SimpleUser> users = null;
+    public static Map<String,User> loadUserMemory() {
+        Map<String,User> users = null;
         try {
             String jsonString = TestFilesInRoot.readMemory(usersMemoryFileName);
-            Type userMapType = new TypeToken<Map<String, SimpleUser>>() {}.getType();
+            Type userMapType = new TypeToken<Map<String, User>>() {}.getType();
             users = gson.fromJson(jsonString, userMapType);
         } catch (IOException e) {
             users = new HashMap<>();
@@ -81,8 +82,9 @@ public class TSWithMemory {
         public void handle(HttpExchange exchange) {
             String userName = getUserName(exchange);
             String requestMethod = exchange.getRequestMethod();
-            setRequestBody(exchange);
-            SimpleUser user = users.get(userName);
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
+            User user = users.get(userName);
             if (!users.containsKey(user)){
                 setResponse(exchange, 404, "unknown user = '" + userName + "'");
             } else
@@ -100,8 +102,6 @@ public class TSWithMemory {
                 if (users.get(userName) == null){
                     setResponse(exchange, 404, "user '" + userName + "' has no info to be read");
                 } else {
-                    String requestBodyString = getRequestBodyString(exchange);
-
                     user = changeItemByJsonString(user, requestBodyString);
                     users.put(userName, user);
                     saveUsers(exchange);
@@ -161,15 +161,16 @@ public class TSWithMemory {
         @Override
         public void handle(HttpExchange exchange)  {
             String requestMethod = exchange.getRequestMethod();
-            setRequestBody(exchange);
+            String requestBodyString = getRequestBodyString(exchange);
+            setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("GET")) {
                 // Read All Users
                 String jsonString = gson.toJson(users);
                 setResponse(exchange, 200, jsonString);
             } else if (requestMethod.equalsIgnoreCase("POST")) {
                 // Create a user
-                String requestBodyString = getRequestBodyString(exchange);
-                SimpleUser user = gson.fromJson(requestBodyString, SimpleUser.class);
+
+                User user = gson.fromJson(requestBodyString, User.class);
                 users.put(user.getName(), user);
                 saveUsers(exchange);
 
@@ -179,18 +180,6 @@ public class TSWithMemory {
             }
 
         }
-    }
-
-    @Nullable
-    static private String getRequestBodyString(HttpExchange exchange) {
-        String requestBodyString = null;
-        try {
-            requestBodyString = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
-            setResponse(exchange, 400, "Request body badly encoded." + e.getMessage() + "\n" + exchange.getRequestBody().toString());
-        }
-        return requestBodyString;
     }
 
     private static void setResponse(HttpExchange exchange, int stateCode, String responseBody) {
@@ -235,15 +224,27 @@ public class TSWithMemory {
         return requestBody;
     }
 
-    private void setRequestBody(HttpExchange exchange) {
-        this.requestBody = getRequestBodyString(exchange);
+    private void setRequestBody(String bodyContent) {
+        this.requestBody = bodyContent;
+    }
+
+    @Nullable
+    static private String getRequestBodyString(HttpExchange exchange) {
+        String requestBodyString = null;
+        try {
+            requestBodyString = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+            setResponse(exchange, 400, "Request body badly encoded." + e.getMessage() + "\n" + exchange.getRequestBody().toString());
+        }
+        return requestBodyString;
     }
 
     static public TSWithMemory createServerForTesting() throws Exception {
         if (instance == null) {
             instance = new TSWithMemory();
             try {
-                instance.server = HttpServer.create(new InetSocketAddress(8001), 0);
+                instance.server = HttpServer.create(new InetSocketAddress(TEST_PORT_WITH_MEMORY), 0);
                 instance.launch();
 
             } catch (IOException e) {

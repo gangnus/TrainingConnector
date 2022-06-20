@@ -8,10 +8,11 @@ import java.nio.charset.StandardCharsets;
  * The fastest Java method of resource reading
  */
 public class TestFilesInRoot {
-    static final String dir="c:\\IDM_testServerMemory\\";
+    static final String dir="c:/IDM_testServerMemory";
     public static String readMemory(String resourceName) throws IOException {
-        String fullfilename = dir+resourceName;
-        InputStream is =  Thread.currentThread().getContextClassLoader().getResourceAsStream(fullfilename);
+        String fullfilename = dir + "/" + resourceName;
+        File memoryFile = new File(fullfilename);
+        InputStream is =  new FileInputStream(memoryFile);
         if(is == null ){
             throw new IOException();
         }
@@ -24,10 +25,15 @@ public class TestFilesInRoot {
         return result.toString("UTF-8");
     }
     public static void writeMemory(String resourceName, String content) throws IOException {
-        String fullfilename = dir+resourceName;
+        File dirFile = new File(dir);
+        if(!dirFile.exists()){
+            dirFile.mkdir();
+        }
+        String fullfilename = dir + "/" + resourceName;
         OutputStreamWriter writer =
                      new OutputStreamWriter(new FileOutputStream(fullfilename), StandardCharsets.UTF_8);
         writer.write(content);
+        writer.close();
 
     }
 }
