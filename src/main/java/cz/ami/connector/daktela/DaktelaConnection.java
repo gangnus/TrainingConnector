@@ -4,6 +4,7 @@ import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import com.google.common.net.HttpHeaders;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import cz.ami.connector.daktela.model.Item;
@@ -30,7 +31,8 @@ import static java.util.stream.Collectors.joining;
 
 public class DaktelaConnection {
     private static final Trace LOG = TraceManager.getTrace(DaktelaConnection.class);
-    static private final Gson gson = new Gson();
+    static GsonBuilder builder = new GsonBuilder();
+    static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
 
 
     static private DaktelaConnection INST;

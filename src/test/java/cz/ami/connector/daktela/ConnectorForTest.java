@@ -1,6 +1,6 @@
 package cz.ami.connector.daktela;
 
-import cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting;
+import cz.ami.connector.daktela.testserver.TSWithConstantResponses;
 import org.jetbrains.annotations.NotNull;
 
 public class ConnectorForTest {
@@ -9,7 +9,7 @@ public class ConnectorForTest {
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         DaktelaConnector connector = new DaktelaConnector();
         connector.init(configuration);
-        configuration.setServiceAddress(ServerForTesting.TEST_SERVER_URI);
+        configuration.setServiceAddress(TSWithConstantResponses.TEST_SERVER_URI);
         return connector;
     }
 }

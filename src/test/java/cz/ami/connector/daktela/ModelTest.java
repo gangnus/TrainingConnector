@@ -1,8 +1,9 @@
 package cz.ami.connector.daktela;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import cz.ami.connector.daktela.model.User;
-import cz.ami.connector.daktela.stanaloneserverlaunch.TestResourceFilesReader;
+import cz.ami.connector.daktela.tools.TestResourceFiles;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -10,10 +11,12 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ModelTest {
+    static GsonBuilder builder = new GsonBuilder();
+    static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
     @Test
     public void TestUserStructure() throws IOException {
-        String jsonString = TestResourceFilesReader.readStringContentFromFile("novak.json");
-        Gson gson = new Gson();
+        String jsonString = TestResourceFiles.readStringContentFromFile("novak.json");
+
         User user = gson.fromJson(jsonString, User.class);
         assertEquals( "NJ",user.getAlias());
         assertEquals( "Novak",user.getName());

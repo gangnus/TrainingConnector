@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela.stanaloneserverlaunch;
+package cz.ami.connector.daktela.testserver;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,19 +13,20 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import cz.ami.connector.daktela.tools.TestResourceFiles;
 
-public class ServerForTesting {
-    private static final Trace LOG = TraceManager.getTrace(ServerForTesting.class);
+public class TSWithConstantResponses {
+    private static final Trace LOG = TraceManager.getTrace(TSWithConstantResponses.class);
     static public final int TEST_PORT = 8001;
     static public final String TEST_SERVER_URI = "http://localhost:" + TEST_PORT;
     private HttpServer server;
-    private static ServerForTesting instance = null;
+    private static TSWithConstantResponses instance = null;
 
 
 
     private String requestBody;
 
-    private ServerForTesting() throws IOException {
+    private TSWithConstantResponses() throws IOException {
     }
 
     public void launch() throws Exception {
@@ -78,7 +79,7 @@ public class ServerForTesting {
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
-                setResponse(exchange, 200, TestResourceFilesReader.readStringContentFromFile("novak.json"));
+                setResponse(exchange, 200, TestResourceFiles.readStringContentFromFile("novak.json"));
             } else {
                 setResponse(exchange, 404, "unknown URI");
             }
@@ -89,7 +90,7 @@ public class ServerForTesting {
         public void handle(HttpExchange exchange) throws IOException {
             String requestMethod = exchange.getRequestMethod();
             if (requestMethod.equalsIgnoreCase("GET")) {
-                setResponse(exchange, 200, TestResourceFilesReader.readStringContentFromFile("vlcek.json"));
+                setResponse(exchange, 200, TestResourceFiles.readStringContentFromFile("vlcek.json"));
             } else {
                 setResponse(exchange, 404, "unknown URI");
             }
@@ -103,9 +104,9 @@ public class ServerForTesting {
                 // Read All Users
                 String jsonString =
                         "[" +
-                                TestResourceFilesReader.readStringContentFromFile("novak.json") +
+                                TestResourceFiles.readStringContentFromFile("novak.json") +
                                 ", " +
-                                TestResourceFilesReader.readStringContentFromFile("vlcek.json") +
+                                TestResourceFiles.readStringContentFromFile("vlcek.json") +
                                 "]";
                 setResponse(exchange, 200, jsonString);
             } else if (requestMethod.equalsIgnoreCase("POST")) {
@@ -164,9 +165,9 @@ public class ServerForTesting {
         this.requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);;
     }
 
-    static public ServerForTesting createServerForTesting() throws Exception {
+    static public TSWithConstantResponses createServerForTesting() throws Exception {
         if (instance == null) {
-            instance = new ServerForTesting();
+            instance = new TSWithConstantResponses();
             try {
                 instance.server = HttpServer.create(new InetSocketAddress(8001), 0);
                 instance.launch();

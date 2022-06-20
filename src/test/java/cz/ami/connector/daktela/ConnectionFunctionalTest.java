@@ -1,22 +1,25 @@
 package cz.ami.connector.daktela;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import cz.ami.connector.daktela.model.User;
-import cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting;
-import cz.ami.connector.daktela.stanaloneserverlaunch.TestResourceFilesReader;
+import cz.ami.connector.daktela.testserver.TSWithConstantResponses;
+import cz.ami.connector.daktela.tools.TestResourceFiles;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting.createServerForTesting;
+import static cz.ami.connector.daktela.testserver.TSWithConstantResponses.createServerForTesting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConnectionFunctionalTest {
-    static private final Gson gson = new Gson();
+    static GsonBuilder builder = new GsonBuilder();
+    static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
+
     DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector();
-    ServerForTesting server = createServerForTesting();
+    TSWithConstantResponses server = createServerForTesting();
 
     ConnectionFunctionalTest() throws Exception {
     }
@@ -26,7 +29,7 @@ class ConnectionFunctionalTest {
 
 
         User user = DaktelaConnection.getINST().read("Novak", User.class);
-        String jsonStringMust = TestResourceFilesReader.readStringContentFromFile("novak.json");
+        String jsonStringMust = TestResourceFiles.readStringContentFromFile("novak.json");
 
         User userFromFile  = gson.fromJson(jsonStringMust, User.class);
         assertEquals(userFromFile.getName(), user.getName());
@@ -43,9 +46,9 @@ class ConnectionFunctionalTest {
 
         String jsonStringMust =
                 "[" +
-                        TestResourceFilesReader.readStringContentFromFile("novak.json") +
+                        TestResourceFiles.readStringContentFromFile("novak.json") +
                         ", " +
-                        TestResourceFilesReader.readStringContentFromFile("vlcek.json") +
+                        TestResourceFiles.readStringContentFromFile("vlcek.json") +
                         "]";
 
         Type userListType = new TypeToken<ArrayList<User>>(){}.getType();

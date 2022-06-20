@@ -1,8 +1,9 @@
 package cz.ami.connector.daktela;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import cz.ami.connector.daktela.model.User;
-import cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting;
+import cz.ami.connector.daktela.testserver.TSWithConstantResponses;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
 import org.junit.jupiter.api.Assertions;
@@ -11,14 +12,16 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static cz.ami.connector.daktela.ConnectorUnitTest.assertUserFields;
-import static cz.ami.connector.daktela.stanaloneserverlaunch.ServerForTesting.createServerForTesting;
+import static cz.ami.connector.daktela.testserver.TSWithConstantResponses.createServerForTesting;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ConnectorFunctionalTest {
-    static private final Gson gson = new Gson();
+    static GsonBuilder builder = new GsonBuilder();
+    static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
+
     DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector();
-    ServerForTesting server = createServerForTesting();
+    TSWithConstantResponses server = createServerForTesting();
 
     ConnectorFunctionalTest() throws Exception {
     }
@@ -43,7 +46,7 @@ class ConnectorFunctionalTest {
      */
     @Test
     public void funcTestUpdateSomeBaseFieldsCorrect() throws Exception {
-        ServerForTesting server = createServerForTesting();
+        TSWithConstantResponses server = createServerForTesting();
         Map<String, Object> map = Map.of(
             Name.NAME,"Professor User",
             DaktelaSchema.ATTR_ALIAS, "alias Prof"
