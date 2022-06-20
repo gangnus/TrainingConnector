@@ -20,7 +20,9 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -165,7 +167,11 @@ public class TSWithMemory {
             setRequestBody(requestBodyString);
             if (requestMethod.equalsIgnoreCase("GET")) {
                 // Read All Users
-                String jsonString = gson.toJson(users);
+                List<User> userList = new ArrayList<>();
+                users.forEach((key, value) -> {
+                    userList.add(value);
+                });
+                String jsonString = gson.toJson(userList);
                 setResponse(exchange, 200, jsonString);
             } else if (requestMethod.equalsIgnoreCase("POST")) {
                 // Create a user

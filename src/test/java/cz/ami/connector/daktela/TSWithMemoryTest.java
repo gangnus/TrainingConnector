@@ -11,6 +11,8 @@ import org.identityconnectors.framework.common.objects.ObjectClass;
 import org.identityconnectors.framework.common.objects.Uid;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,7 +90,12 @@ public class TSWithMemoryTest {
 
         uid = connector.create(new ObjectClass("User"), set2, null);
         assertEquals("user2", uid.getUidValue());
-        Map<String,User> users = TSWithMemory.loadUserMemory();
+        List<User> userList = DaktelaConnection.getINST().readAll(User.class);
+        Map<String,User> users = new HashMap<>();
+        userList.forEach(user -> {
+            users.put(user.getName(),user);
+        });
+
         assertTrue(users.containsKey("user1"),"check for user1 key");
         assertTrue(users.containsKey("user2"),"check for user2 key");
         assertUserFields(map1, users.get("user1"),"user1", " user1 fields ");
