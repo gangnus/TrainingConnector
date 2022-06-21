@@ -18,7 +18,7 @@ class ConnectionFunctionalTest {
     static GsonBuilder builder = new GsonBuilder();
     static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
 
-    DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector();
+    DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector(TSWithConstantResponses.TEST_SERVER_URI);
     TSWithConstantResponses server = createServerForTesting();
 
     ConnectionFunctionalTest() throws Exception {

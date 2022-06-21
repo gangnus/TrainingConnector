@@ -22,10 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Flow;
-import java.util.stream.Collector;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.stream.Collector.*;
 import static java.util.stream.Collectors.joining;
 
 
@@ -49,6 +47,7 @@ public class DaktelaConnection {
 
 
     public static DaktelaConnection getINST() {
+        LOG.debug("getting a connection instance");
         return INST;
     }
 
@@ -60,11 +59,11 @@ public class DaktelaConnection {
         }
     }
 
-    public static void setINST(DaktelaConnection connection) {
+    public static void changeINST(DaktelaConnection connection) {
         INST = connection;
     }
 
-    private DaktelaConnection(DaktelaConfiguration configuration) {
+    DaktelaConnection(DaktelaConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -124,6 +123,7 @@ public class DaktelaConnection {
      */
     public <I extends Item> I read(String name, Class<I> itemClass){
         LOG.debug("----------- before single user request -----------------");
+        LOG.debug("Reading of item-" + itemClass.getSimpleName() + ", name="+ name);
         I item = null;
         String opMessage = "single "+ itemClass.getSimpleName()  + name + "reading";
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(name, itemClass),opMessage)
@@ -146,7 +146,7 @@ public class DaktelaConnection {
      * @param <I> class of objects to be operated with
      */
     public <I extends Item> List<I> readAll(Class<I> itemClass) {
-
+        LOG.debug("Reading all item of class=" + itemClass.getSimpleName());
 
         String opMessage = "all "+ itemClass.getSimpleName() + "s reading";
         LOG.debug("----------- before " + opMessage + " request -----------------");
@@ -175,6 +175,7 @@ public class DaktelaConnection {
      * @param item object to be operated with
      */
     public void createRecord( Item item) {
+        LOG.debug("Creation of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " creation ";
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAllItems(item.getClass()), opMessage)
@@ -189,6 +190,7 @@ public class DaktelaConnection {
      * @param item object to be operated with
      */
     public void updateRecord(Item item) {
+        LOG.debug("Update of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " update ";
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(item.getName(), item.getClass()),opMessage)

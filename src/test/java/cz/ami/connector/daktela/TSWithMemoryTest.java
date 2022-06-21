@@ -1,5 +1,7 @@
 package cz.ami.connector.daktela;
 
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import cz.ami.connector.daktela.model.User;
@@ -23,14 +25,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TSWithMemoryTest {
+    private static final Trace LOG = TraceManager.getTrace(TSWithMemoryTest.class);
     static GsonBuilder builder = new GsonBuilder();
     static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
 
-    DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector();
-    {
-        connector.getConfiguration().setServiceAddress(TSWithMemory.TEST_SERVER_URI);
-    }
-    TSWithMemory serverWithMemory = TSWithMemory.createServerForTesting();
+
 
     public TSWithMemoryTest() throws Exception {
     }
@@ -62,7 +61,14 @@ public class TSWithMemoryTest {
      */
     @Test
     public void testASequenceofCommands() throws Exception {
+        DaktelaConnector connector = ConnectorForTest.createTestDaktelaConnector(TSWithMemory.TEST_SERVER_URI);
+        TSWithMemory serverWithMemory = TSWithMemory.createServerForTesting();
+
         assertNotNull(serverWithMemory, " test server before the test method");
+        assertNotNull(DaktelaConnection.getINST(), " connection check");
+        assertEquals(TSWithMemory.TEST_SERVER_URI, DaktelaConnection.getINST().getUriSource()," check server URI got from connection");
+
+
         Map<String, Object> map1 = Map.of(
                 Uid.NAME, "user1",
                 Name.NAME,"Professor User",
@@ -77,10 +83,6 @@ public class TSWithMemoryTest {
         assertEquals("user1", uid.getUidValue());
         // check request body
         assertNotNull(serverWithMemory, " test server after tested call ");
-        String jsonString = serverWithMemory.getRequestBody();
-        assertNotNull(jsonString, " response json string ");
-        User userSent = gson.fromJson(jsonString, User.class);
-        assertUserFields(map1, userSent, "user1", " some base user fields ");
 
         Map<String, Object> map2 = Map.of(
                 Uid.NAME, "user2",
@@ -93,10 +95,13 @@ public class TSWithMemoryTest {
 
         uid = connector.create(new ObjectClass("User"), set2, null);
         assertEquals("user2", uid.getUidValue());
+
         List<User> userList = DaktelaConnection.getINST().readAll(User.class);
         Map<String,User> users = new HashMap<>();
+        LOG.debug("added to map, number of items=" + userList.size());
         userList.forEach(user -> {
             users.put(user.getName(),user);
+            LOG.debug("added to map, key=" + user.getName());
         });
 
         assertTrue(users.containsKey("user1"),"check for user1 key");

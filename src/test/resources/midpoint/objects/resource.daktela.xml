@@ -1,7 +1,7 @@
 <resource xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="04aeeb7d-6356-4a10-98c0-e75263ab0fcc" version="118">
     <name>Daktela</name>
 
-    <connectorRef oid="2afe761e-e087-4d44-822f-8d4edf386a73" relation="org:default" type="c:ConnectorType">
+    <connectorRef oid="172c1d9d-fc28-417d-88e4-d33f5d35a882" relation="org:default" type="c:ConnectorType">
         <!-- ConnId cz.ami.connector.daktela.DaktelaConnector v1.0.5 -->
     </connectorRef>
     <connectorConfiguration xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3">

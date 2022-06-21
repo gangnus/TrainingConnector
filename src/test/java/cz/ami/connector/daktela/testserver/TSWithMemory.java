@@ -46,8 +46,6 @@ public class TSWithMemory {
     static GsonBuilder builder = new GsonBuilder();
     static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
 
-    private String requestBody;
-
     private TSWithMemory() throws IOException {
         users = loadUserMemory();
     }
@@ -89,7 +87,7 @@ public class TSWithMemory {
             String userName = getUserName(exchange);
             String requestMethod = exchange.getRequestMethod();
             String requestBodyString = getRequestBodyString(exchange);
-            setRequestBody(requestBodyString);
+
             User user = users.get(userName);
             if (!users.containsKey(userName)){
                 setResponse(exchange, 404, "unknown user = '" + userName + "'");
@@ -168,7 +166,8 @@ public class TSWithMemory {
         public void handle(HttpExchange exchange)  {
             String requestMethod = exchange.getRequestMethod();
             String requestBodyString = getRequestBodyString(exchange);
-            setRequestBody(requestBodyString);
+
+            LOG.debug("Creating user. Request body = " + requestBodyString);
             if (requestMethod.equalsIgnoreCase("GET")) {
                 // Read All Users
                 List<User> userList = new ArrayList<>();
@@ -228,14 +227,6 @@ public class TSWithMemory {
             LOG.error("failed sending back the response");
         }
 
-    }
-
-    public String getRequestBody() {
-        return requestBody;
-    }
-
-    private void setRequestBody(String bodyContent) {
-        this.requestBody = bodyContent;
     }
 
     @Nullable
