@@ -27,6 +27,10 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+/**
+ * This class keeps Daktela items in memory and
+ * simulates all interesting for us behaviour of the Daktela Server
+ */
 public class TSWithMemory {
     private static final Trace LOG = TraceManager.getTrace(TSWithMemory.class);
     static public final int TEST_PORT_WITH_MEMORY = 8002;
@@ -87,7 +91,7 @@ public class TSWithMemory {
             String requestBodyString = getRequestBodyString(exchange);
             setRequestBody(requestBodyString);
             User user = users.get(userName);
-            if (!users.containsKey(user)){
+            if (!users.containsKey(userName)){
                 setResponse(exchange, 404, "unknown user = '" + userName + "'");
             } else
 

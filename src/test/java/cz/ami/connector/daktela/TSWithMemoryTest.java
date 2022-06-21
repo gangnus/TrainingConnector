@@ -54,11 +54,14 @@ public class TSWithMemoryTest {
         assertEquals("new Alias", userChanged.getAlias());
 
     }
-    /** -------------- Functional test update - a correct update of a user
-     *
+    /** -------------- Functional test of TSWithMemory for:
+     *  creation 2 users,
+     *  reading All Users
+     *  changing a user
+     *  reading the user
      */
     @Test
-    public void addTwoUsers() throws Exception {
+    public void testASequenceofCommands() throws Exception {
         assertNotNull(serverWithMemory, " test server before the test method");
         Map<String, Object> map1 = Map.of(
                 Uid.NAME, "user1",
@@ -100,6 +103,20 @@ public class TSWithMemoryTest {
         assertTrue(users.containsKey("user2"),"check for user2 key");
         assertUserFields(map1, users.get("user1"),"user1", " user1 fields ");
         assertUserFields(map2, users.get("user2"),"user2", " user2 fields ");
+
+        Map<String, Object> map3 = new HashMap<>(){
+            {
+                put(Uid.NAME, "user2");
+                put(Name.NAME, "Docent User 2 - changed");
+                put(DaktelaSchema.ATTR_ALIAS, null);
+                put(DaktelaSchema.ATTR_DESCRIPTION, "Changed Description");
+
+            }};
+        Set<Attribute> set3 =createAttributeSetFromMap(map3);
+        connector.update(new ObjectClass("User"), new Uid("user2"), set3, null);
+
+        User user2Changed = DaktelaConnection.getINST().read("user2",User.class);
+        assertUserFields(map3, user2Changed,"user2", " checking user2 after change and read ");
 
     }
     static void assertUserFields(Map<String, Object> map, User user, String uid, String message){
