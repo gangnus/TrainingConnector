@@ -11,6 +11,8 @@ import cz.ami.connector.daktela.model.Item;
 import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,60 +21,44 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Flow;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.stream.Collectors.joining;
 
 
 public class DaktelaConnection {
+
+    public DaktelaConfiguration configuration;
+    private GsonBuilder builder = new GsonBuilder();
+    private Gson gson = builder.serializeNulls().setPrettyPrinting().create();
     private static final Trace LOG = TraceManager.getTrace(DaktelaConnection.class);
-    static GsonBuilder builder = new GsonBuilder();
-    static Gson gson = builder.serializeNulls().setPrettyPrinting().create();
-
-
-    static private DaktelaConnection INST;
-
-
-    private DaktelaConfiguration configuration;
-
-    static private final HttpClient client = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .build();
-
-
-    public static final String URI_AFTER_NAME = ".json";
-
-
-    public static DaktelaConnection getINST() {
-        LOG.debug("getting a connection instance");
-        return INST;
-    }
-
-    public static void setNewINST(DaktelaConfiguration config) {
-        if (DaktelaConnection.INST == null) {
-            INST = new DaktelaConnection(config);
-        } else {
-            INST.configuration = config;
-        }
-    }
-
-    public static void changeINST(DaktelaConnection connection) {
-        INST = connection;
-    }
+    private static final String URI_AFTER_NAME = ".json";
+    private static final TrustManager[] trustAllCerts = new TrustManager[]{
+            new javax.net.ssl.X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(
+                        java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            }
+    };
 
     DaktelaConnection(DaktelaConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    public String getUriSource() {
-        return configuration.getServiceAddress();
-    }
-
-    public Integer getTimeout() {
-        return configuration.getTimeout();
+    DaktelaConfiguration getConfiguration() {
+        return configuration;
     }
 
     /**
@@ -82,7 +68,6 @@ public class DaktelaConnection {
     static private final Map<Class<? extends Item>, String> uriForItem= new HashMap<>() {{
         put(User.class, "/api/v6/users");
     }};
-
 
     /**
      * Getting the whole URI for an item by name
@@ -104,10 +89,10 @@ public class DaktelaConnection {
      */
     public String startOfUriLineForItems(Class<? extends Item> itemClass){
         String secondPiece = uriForItem.get(itemClass);
-        if(secondPiece == null){
+        if (secondPiece == null) {
             errorReaction("No URI exists for the class " + itemClass.getName());
         }
-        return getUriSource() + secondPiece;
+        return getConfiguration().getServiceAddress() + secondPiece;
     }
 
     static private void errorReaction(String message){
@@ -130,7 +115,7 @@ public class DaktelaConnection {
                 .GET();
 
         LOG.debug("------------------- a request created, but not sent yet --------------------- ");
-        HttpResponse<String> response = prepareResponse(requestBuilder, opMessage);
+        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
         String jsonString = response.body();
         LOG.debug("----------- ready jsonString -----------------");
         LOG.debug(jsonString);
@@ -153,7 +138,7 @@ public class DaktelaConnection {
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAllItems(itemClass), opMessage)
                 .GET();
         LOG.debug("----------- after " + opMessage + " request preparation -----------------");
-        HttpResponse<String> response = prepareResponse(requestBuilder, opMessage);
+        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
         LOG.debug("----------- after " + opMessage + " getting response -----------------");
 
         String jsonString = response.body();
@@ -180,7 +165,7 @@ public class DaktelaConnection {
         String opMessage = "single "+ item.getClass().getSimpleName() + " creation ";
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAllItems(item.getClass()), opMessage)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)));
-        HttpResponse<String> response = prepareResponse(requestBuilder, opMessage);
+        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
         checkResponseStatus("Creation ", item.getClass(), response);
     }
 
@@ -195,7 +180,7 @@ public class DaktelaConnection {
         String opMessage = "single "+ item.getClass().getSimpleName() + " update ";
         HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(item.getName(), item.getClass()),opMessage)
                 .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)));
-        HttpResponse<String> response = prepareResponse(requestBuilder, opMessage);
+        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
         LOG.debug("Response accepted");
         checkResponseStatus("Update ", item.getClass(), response);
     }
@@ -213,14 +198,35 @@ public class DaktelaConnection {
         }
     }
 
+    private HttpClient getHttpClient() {
+
+        HttpClient.Builder clientBuilder = HttpClient.newBuilder();
+        clientBuilder.connectTimeout(Duration.of(getConfiguration().getTimeout(), ChronoUnit.SECONDS));
+        clientBuilder.followRedirects(HttpClient.Redirect.ALWAYS);
+        //clientBuilder.version(HttpClient.Version.HTTP_2);
+
+        // when service has not valid HTTPS certificate
+        if (getConfiguration().getTrustAllCertificates()) {
+            SSLContext sslContext = null;
+            try {
+                sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, trustAllCerts, new SecureRandom());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                e.printStackTrace();
+            }
+            clientBuilder.sslContext(sslContext); // HACK SSL ALLOW ALL CERTS
+        }
+
+        return clientBuilder.build();
+    }
 
     private HttpRequest.Builder preprepareRequest(String uriLine, String opMessage){
-        LOG.debug("uri ="+uriLine);
-        LOG.debug("timeout ="+getTimeout());
+        LOG.debug("uri =" + uriLine);
+        LOG.debug("timeout =" + getConfiguration().getTimeout());
         try {
             return HttpRequest.newBuilder()
                     .uri(new URI(uriLine))
-                    .timeout(Duration.of(getTimeout(), SECONDS))
+                    .timeout(Duration.of(getConfiguration().getTimeout(), SECONDS))
                     .setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
         } catch (URISyntaxException e) {
@@ -231,7 +237,7 @@ public class DaktelaConnection {
         return null;
     }
 
-    static HttpResponse<String> prepareResponse(HttpRequest.Builder requestBuilder, String opMessage){
+    private HttpResponse<String> sendRequest(HttpRequest.Builder requestBuilder, String opMessage){
         if (requestBuilder == null) {
             errorReaction(opMessage + " failed, the builder before build = null");
         }
@@ -239,12 +245,9 @@ public class DaktelaConnection {
         try {
             //TODO to trace, create setting log level
             if(LOG.isDebugEnabled()) {
-                LOG.debug("------------- request = " + request.toString());
-
                 LOG.debug("request body= " + requestBodyToString(request));
-
             }
-            return client.send(request, HttpResponse.BodyHandlers.ofString());
+            return getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
             e.printStackTrace();
             errorReaction("IO error while " + opMessage + " " + e.getMessage());
@@ -255,6 +258,7 @@ public class DaktelaConnection {
         // never really reached
         return null;
     }
+
     static final class StringSubscriber implements Flow.Subscriber<ByteBuffer> {
         final HttpResponse.BodySubscriber<String> wrapped;
         StringSubscriber(HttpResponse.BodySubscriber<String> wrapped) {
@@ -272,39 +276,19 @@ public class DaktelaConnection {
         public void onComplete() { wrapped.onComplete(); }
 
     }
+
     static String requestBodyToString(HttpRequest request){
-        if(request.bodyPublisher().isPresent()){
-        String requestBodyAsString = request.bodyPublisher().map(p -> {
-            var bodySubscriber = HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
-            var flowSubscriber = new StringSubscriber(bodySubscriber);
-            p.subscribe(flowSubscriber);
-            return bodySubscriber.getBody().toCompletableFuture().join();
-        }).get();
-        return requestBodyAsString;
+        if (request.bodyPublisher().isPresent()) {
+            String requestBodyAsString = request.bodyPublisher().map(p -> {
+                HttpResponse.BodySubscriber<String> bodySubscriber = HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
+                StringSubscriber flowSubscriber = new StringSubscriber(bodySubscriber);
+                p.subscribe(flowSubscriber);
+                return bodySubscriber.getBody().toCompletableFuture().join();
+            }).get();
+            return requestBodyAsString;
         } else {
             return "empty request body";
         }
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

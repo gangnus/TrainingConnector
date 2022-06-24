@@ -20,22 +20,20 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Using Java 9 immutable Map constructions
  * Using Java 11 Http client
  * Tested on Midpoint 4.4.1 with ConnId 1.5.0.18
  */
 @ConnectorClass(displayNameKey = "daktela.connector.display", configurationClass = DaktelaConfiguration.class)
 public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, SearchOp<Filter>, UpdateOp {
-        
-	private static final Trace LOG = TraceManager.getTrace(DaktelaConnector.class);
 
+	private static final Trace LOG = TraceManager.getTrace(DaktelaConnector.class);
     private DaktelaConfiguration configuration;
+    private DaktelaConnection connection;
 
     @Override
     public void init(Configuration configuration) {
-
         this.configuration = (DaktelaConfiguration) configuration;
-        DaktelaConnection.setNewINST(this.configuration);
+        connection = new DaktelaConnection(this.configuration);
     }
     
     @Override
@@ -88,7 +86,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             if(filter == null){
                 LOG.debug("------------------- before reading all users ---------------------");
 
-                List<User> users = DaktelaConnection.getINST().readAll(User.class);
+                List<User> users = connection.readAll(User.class);
                 if(users == null) {
                     throw new ConnectorException("Users list not found");
                 }
@@ -111,7 +109,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
                 }
                 String uidString = uidValue.get(0).toString();
 
-                User user = DaktelaConnection.getINST().read(uidString, User.class);
+                User user = connection.read(uidString, User.class);
 
                 addUserToHandler(user, resultsHandler);
 
@@ -148,7 +146,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             }
         }
         if(user.getName()!=null) {
-            DaktelaConnection.getINST().createRecord(user);
+            connection.createRecord(user);
         } else {
             LOG.warn("user cannot be created. Reason: Empty Name/UID. Title/Name = " + user.getTitle());
         }
@@ -262,29 +260,26 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
 
     @Override
     public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> set, OperationOptions operationOptions) {
-        LOG.debug("Start updateDelta of the user with UID = " + uid.getUidValue());
-//
+        LOG.debug("Start update of the user with UID = " + uid.getUidValue());
+
+        // empty delta
         if (set == null || set.isEmpty()) {
-            errorReaction("attributes not provided or empty");
+            return uid;
         }
         if (objectClass.getObjectClassValue().equals(User.class.getSimpleName())){
-            updateUser(uid, set);
-        }
-        return uid;
-    }
-
-    private void updateUser(Uid uid, Set<Attribute> set) {
-        User user = new User();
-        user.setName(uid.getUidValue());
-        Boolean userChanged = false;
-        if (set != null){
-            for (Attribute attribute : set) {
-                userChanged = insertAttrIntoUser(uid, user, attribute) || userChanged;
+            User user = new User();
+            user.setName(uid.getUidValue());
+            Boolean userChanged = false;
+            if (set != null) {
+                for (Attribute attribute : set) {
+                    userChanged = insertAttrIntoUser(uid, user, attribute) || userChanged;
+                }
+            }
+            if (userChanged) {
+                connection.updateRecord(user);
             }
         }
-        if (userChanged) {
-            DaktelaConnection.getINST().updateRecord(user);
-        }
+        return uid;
     }
 
     private Boolean insertAttrIntoUser(Uid uid, User user, Attribute attribute) {

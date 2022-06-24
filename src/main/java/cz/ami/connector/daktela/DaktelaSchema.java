@@ -1,6 +1,5 @@
 package cz.ami.connector.daktela;
 
-
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.spi.operations.SearchOp;
 

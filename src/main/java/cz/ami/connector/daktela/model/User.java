@@ -42,6 +42,7 @@ public class User extends Item {
     private String forwardingNumber;
     private Boolean deactivated;
     private Boolean deleted;
+
     public User(String name, String title, String description, String alias, String password, String clid, String email) {
         this.setName(name);
         this.setTitle(title);
@@ -51,6 +52,6 @@ public class User extends Item {
         this.clid = clid;
         this.email = email;
     }
-    public User(){}
 
+    public User() {}
 }
