@@ -12,7 +12,7 @@ public class Profile {
     private Boolean deleteMissedActivity;
     private Boolean noQueueCallsAllowed;
     private String canTransferCall;
-    private String options;
-    private String customViews;
+//    private String options;
+//    private String customViews;
 
 }

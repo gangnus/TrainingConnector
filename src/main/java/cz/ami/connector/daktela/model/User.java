@@ -12,8 +12,8 @@ import java.util.List;
 public class User extends Item {
 
     private String alias;
-    private List<Role> role;
-    private List<Profile> profile;
+    private Role role;
+    private Profile profile;
     @SerializedName("nps_score")
     private Float npsScore;
     @SerializedName("call_steering_description")
@@ -30,7 +30,7 @@ public class User extends Item {
     private Boolean allowRecordingInterruption;
     //TODO for enum - what will be used in the input json string - names or values?
     private String recordAtCallStart;
-    private IntegrationConfigs algo;
+//    private IntegrationConfigs algo;
     private String email;
     private String emailAuth;
     private String icon;

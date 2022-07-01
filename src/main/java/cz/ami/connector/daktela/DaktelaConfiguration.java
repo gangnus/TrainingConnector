@@ -58,6 +58,6 @@ public class DaktelaConfiguration extends AbstractConfiguration {
     }
 
     public void setTimeout(int timeout) {
-        this.serviceAddress = serviceAddress;
+        this.timeout = timeout;
     }
 }

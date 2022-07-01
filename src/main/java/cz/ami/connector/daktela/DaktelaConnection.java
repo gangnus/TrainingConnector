@@ -2,13 +2,11 @@ package cz.ami.connector.daktela;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import com.google.common.net.HttpHeaders;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
-import cz.ami.connector.daktela.model.Item;
-import cz.ami.connector.daktela.model.User;
+import cz.ami.connector.daktela.model.*;
+import org.identityconnectors.common.security.SecurityUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 
 import javax.net.ssl.SSLContext;
@@ -26,10 +24,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Flow;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 
 public class DaktelaConnection {
@@ -37,8 +35,15 @@ public class DaktelaConnection {
     public DaktelaConfiguration configuration;
     private GsonBuilder builder = new GsonBuilder();
     private Gson gson = builder.serializeNulls().setPrettyPrinting().create();
+
+    //TODO nepoužívá se zatím
+    private static final Map<Class<? extends Item>, String> uriForClass = ImmutableMap.of(
+            User.class,"users",
+            Role.class,"roles");
+
     private static final Trace LOG = TraceManager.getTrace(DaktelaConnection.class);
-    private static final String URI_AFTER_NAME = ".json";
+    private static final String URI_JSON_END = ".json";
+    // pro případ nevalidních HTTPS certifikátů
     private static final TrustManager[] trustAllCerts = new TrustManager[]{
             new javax.net.ssl.X509TrustManager() {
                 public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -67,39 +72,6 @@ public class DaktelaConnection {
     public Integer getTimeout() {
         return configuration.getTimeout();
     }
-    /**
-     * URI parts starting from the server address and ending before the name of the item
-     * a URI part for a possible item class
-     */
-    static private final Map<Class<? extends Item>, String> uriForItem= new HashMap<>() {{
-        put(User.class, "/api/v6/users");
-    }};
-
-    /**
-     * Getting the whole URI for an item by name
-     * @param itemClass class of objects to be operated with
-     */
-    public String uriLineForAnItem(String name, Class<? extends Item> itemClass){
-        return startOfUriLineForItems(itemClass) + "/" + name + URI_AFTER_NAME;
-    }
-    /**
-     * Getting the whole URI for all items
-     * @param itemClass class of objects to be operated with
-     */
-    public String uriLineForAllItems(Class<? extends Item> itemClass){
-        return startOfUriLineForItems(itemClass) + URI_AFTER_NAME;
-    }
-    /**
-     * Getting of URI part starting from the server address and ending before the name of the item
-     * @param itemClass class of objects to be operated with
-     */
-    public String startOfUriLineForItems(Class<? extends Item> itemClass){
-        String secondPiece = uriForItem.get(itemClass);
-        if (secondPiece == null) {
-            errorReaction("No URI exists for the class " + itemClass.getName());
-        }
-        return getConfiguration().getServiceAddress() + secondPiece;
-    }
 
     static private void errorReaction(String message){
         LOG.error(message);
@@ -110,54 +82,42 @@ public class DaktelaConnection {
      * Return one instance of Items
      * URI = something as /api/v6/users/{NAME}.json
      * @param itemClass class of objects to be operated with
-     * @param <I> class of objects to be operated with
      */
-    public <I extends Item> I read(String name, Class<I> itemClass){
+    public User read(String uid, Class itemClass){
         LOG.debug("----------- before single user request -----------------");
-        LOG.debug("Reading of item-" + itemClass.getSimpleName() + ", name="+ name);
-        I item = null;
-        String opMessage = "single "+ itemClass.getSimpleName()  + name + "reading";
-        HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(name, itemClass),opMessage)
-                .GET();
+        LOG.debug("Reading of item-" + itemClass.getSimpleName() + ", name="+ uid);
+        HttpRequest request = preprepareRequest(User.class, uid).GET().build();
 
         LOG.debug("------------------- a request created, but not sent yet --------------------- ");
-        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
+        HttpResponse<String> response = sendRequest(request);
         String jsonString = response.body();
         LOG.debug("----------- ready jsonString -----------------");
         LOG.debug(jsonString);
-        item = gson.fromJson(jsonString, itemClass);
-        LOG.debug("----------- ready Item -----------------");
-        return item;
+        UsersOne a = gson.fromJson(jsonString, UsersOne.class);
+        User b = a.getResult();
+        return b;
     }
 
     /**
      * Return collection of Items models
      * URI = something as /api/v6/users.json
      * @param itemClass class of objects to be operated with
-     * @param <I> class of objects to be operated with
      */
-    public <I extends Item> List<I> readAll(Class<I> itemClass) {
-        LOG.debug("Reading all item of class=" + itemClass.getSimpleName());
+    public List<User> readAll(Class itemClass) {
+        HttpRequest request = preprepareRequest(User.class, null).GET().build();
+        LOG.debug("Reading all item of class {}", itemClass.getSimpleName());
+        LOG.debug("Request info: {}", request.uri().toString());
+        LOG.debug("Request info: {}", request.headers());
 
-        String opMessage = "all "+ itemClass.getSimpleName() + "s reading";
-        LOG.debug("----------- before " + opMessage + " request -----------------");
-        HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAllItems(itemClass), opMessage)
-                .GET();
-        LOG.debug("----------- after " + opMessage + " request preparation -----------------");
-        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
-        LOG.debug("----------- after " + opMessage + " getting response -----------------");
-
+        HttpResponse<String> response = sendRequest(request);
         String jsonString = response.body();
+        LOG.debug("response body: {}", jsonString);
 
-        JsonParser jsonParser = new JsonParser();
-        JsonArray jsonArray  = (JsonArray)jsonParser.parse(jsonString);
 
-        List<I> items = new ArrayList<>();
-        jsonArray.forEach(jsonElement -> {
-            items.add(gson.fromJson(jsonElement, itemClass));
-            LOG.debug("---------------name["+(items.size()-1) + "]=" +  items.get(items.size()-1).getName());
-        });
-        return items;
+        Users a = new Gson().fromJson(jsonString, Users.class);
+        Users.UsersData b = a.getResult();
+        User[] c = b.getData();
+        return List.of(c);
     }
 
     /**
@@ -169,9 +129,9 @@ public class DaktelaConnection {
         LOG.debug("Creation of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " creation ";
-        HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAllItems(item.getClass()), opMessage)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)));
-        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
+        HttpRequest request = preprepareRequest(User.class, null)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8))).build();
+        HttpResponse<String> response = sendRequest(request);
         checkResponseStatus("Creation ", item.getClass(), response);
     }
 
@@ -184,9 +144,9 @@ public class DaktelaConnection {
         LOG.debug("Update of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " update ";
-        HttpRequest.Builder requestBuilder = preprepareRequest(uriLineForAnItem(item.getName(), item.getClass()),opMessage)
-                .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8)));
-        HttpResponse<String> response = sendRequest(requestBuilder, opMessage);
+        HttpRequest request = preprepareRequest(User.class, null)
+                .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8))).build();
+        HttpResponse<String> response = sendRequest(request);
         LOG.debug("Response accepted");
         checkResponseStatus("Update ", item.getClass(), response);
     }
@@ -205,11 +165,10 @@ public class DaktelaConnection {
     }
 
     private HttpClient getHttpClient() {
-
         HttpClient.Builder clientBuilder = HttpClient.newBuilder();
         clientBuilder.connectTimeout(Duration.of(getConfiguration().getTimeout(), ChronoUnit.SECONDS));
-        clientBuilder.followRedirects(HttpClient.Redirect.ALWAYS);
-        //clientBuilder.version(HttpClient.Version.HTTP_2);
+        //clientBuilder.followRedirects(HttpClient.Redirect.ALWAYS);
+        clientBuilder.version(HttpClient.Version.HTTP_1_1);
 
         // when service has not valid HTTPS certificate
         if (getConfiguration().getTrustAllCertificates()) {
@@ -226,43 +185,42 @@ public class DaktelaConnection {
         return clientBuilder.build();
     }
 
-    private HttpRequest.Builder preprepareRequest(String uriLine, String opMessage){
-        LOG.debug("uri =" + uriLine);
-        LOG.debug("timeout =" + getConfiguration().getTimeout());
+    private HttpRequest.Builder preprepareRequest(Class<? extends Item> itemClass, String uid){
+        String url = getConfiguration().getServiceAddress();
+        url += "/users";
+        if (uid != null) {
+            url += "/" + uid;
+        } else {
+            url += URI_JSON_END;
+        }
+        url += "?accessToken=" + SecurityUtil.decrypt(getConfiguration().getAccessToken());
+        LOG.debug("uri: " + url);
+        LOG.debug("timeout: " + getConfiguration().getTimeout());
         try {
-            return HttpRequest.newBuilder()
-                    .uri(new URI(uriLine))
-                    .timeout(Duration.of(getConfiguration().getTimeout(), SECONDS))
-                    .setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            return HttpRequest.newBuilder().uri(new URI(url));
+//                    .setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            errorReaction("Error in URI for " + opMessage + " " + uriLine + "\n" + e.getMessage());
+            errorReaction("Error in URL: " + url + "\n" + e.getMessage());
         }
         // never really reached
         return null;
     }
 
-    private HttpResponse<String> sendRequest(HttpRequest.Builder requestBuilder, String opMessage){
-        if (requestBuilder == null) {
-            errorReaction(opMessage + " failed, the builder before build = null");
-        }
-        HttpRequest request = requestBuilder.build();
+    private HttpResponse<String> sendRequest(HttpRequest request){
+        HttpResponse response = null;
         try {
             //TODO to trace, create setting log level
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("request body= " + requestBodyToString(request));
-            }
-            return getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
+//            if(LOG.isDebugEnabled()) {
+//                LOG.debug("request body= " + requestBodyToString(request));
+//            }
+            response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            errorReaction("IO error while " + opMessage + " " + e.getMessage());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            errorReaction("interrupted while " + opMessage + " " + e.getMessage());
         }
-        // never really reached
-        return null;
+        LOG.debug("Response status code {}", response.statusCode());
+        return response;
     }
 
     static final class StringSubscriber implements Flow.Subscriber<ByteBuffer> {

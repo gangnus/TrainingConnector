@@ -1,9 +1,9 @@
-
 package cz.ami.connector.daktela;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import cz.ami.connector.daktela.model.User;
+import cz.ami.connector.daktela.model.UsersOne;
 import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
@@ -66,12 +66,11 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
 	    schema();
 	}
 
-
-
     @Override
     public FilterTranslator<Filter> createFilterTranslator(ObjectClass objectClass, OperationOptions options) {
         return CollectionUtil::newList;
     }
+
     static private void errorReaction(String message){
         LOG.error(message);
         throw new ConnectorException(message);
@@ -87,41 +86,26 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
 
         // USER
         if (DaktelaSchema.CLASS_USER.equals(objectClass)) {
-
-            //klient se pripoji
-            //getne usera s id !
-
-            if(filter == null){
-                LOG.debug("------------------- before reading all users ---------------------");
-
+            if (filter == null) {
+                // všechny objekty
+                LOG.debug("reading all users");
                 List<User> users = connection.readAll(User.class);
-                if(users == null) {
-                    throw new ConnectorException("Users list not found");
+                LOG.debug("get {} objects from end system", users.size());
+                users.forEach(user -> resultsHandler.handle(makeConnectorUser(user)));
+            } else if (filter.getClass().getName().equals("org.identityconnectors.framework.common.objects.filter.EqualsFilter")) {
+                // jeden objekt
+                EqualsFilter equalsFilter = (EqualsFilter)filter;
+                String attrName  = equalsFilter.getAttribute().getName();
+                String attrValue = (String) equalsFilter.getAttribute().getValue().get(0);
+                LOG.debug("EqualsFilter, attribute name: {}", attrName);
+                LOG.debug("EqualsFilter, attribute value: {}", attrValue);
+                if (attrName == Uid.NAME) {
+                    LOG.debug("EqualsFilter, search by UID");
+                    User user = connection.read(attrValue, UsersOne.class);
+                    resultsHandler.handle(makeConnectorUser(user));
+                } else {
+                    throw new ConnectorException("search by " + attrName + " not implemented");
                 }
-
-                users.stream().forEach(user -> addUserToHandler(user, resultsHandler));
-
-
-            } else if (filter.getClass().getName().equals("org.identityconnectors.framework.common.objects.filter.EqualsFilter")){
-                LOG.debug("------------------- before reading a user ---------------------");
-                String uidName  = ((EqualsFilter)filter).getAttribute().getName();
-                if(uidName == null) {
-                    errorReaction("A user can be searched by uid only");
-                }
-                List<Object> uidValue  = ((EqualsFilter)filter).getAttribute().getValue();
-                if(uidValue == null || uidValue.size()==0) {
-                    errorReaction("A uid for a user search is not set");
-                }
-                if(uidValue.size()>1) {
-                    errorReaction("A uid for a user search is not single");
-                }
-                String uidString = uidValue.get(0).toString();
-
-                User user = connection.read(uidString, User.class);
-
-                addUserToHandler(user, resultsHandler);
-
-
             }
         }
 
@@ -249,21 +233,22 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         return null;
     }*/
     /**
-     *  udelat objekt a poslat ho
+     *  udelat objekt pro IdM
       */
-    private void addUserToHandler(User user, ResultsHandler resultsHandler){
+    private ConnectorObject makeConnectorUser(User user){
         ConnectorObjectBuilder cob = new ConnectorObjectBuilder();
         cob.setObjectClass(DaktelaSchema.CLASS_USER);
 
         cob.setUid(user.getName());
         cob.setName(user.getTitle());
+        cob.addAttribute(DaktelaSchema.ATTR_EMAIL, user.getEmail());
+        if (user.getProfile() != null) {
+            cob.addAttribute(DaktelaSchema.ATTR_PROFILE_TITLE, user.getProfile().getTitle());
+        }
         cob.addAttribute(DaktelaSchema.ATTR_ALIAS, user.getAlias());
         cob.addAttribute(DaktelaSchema.ATTR_DESCRIPTION, user.getDescription());
-        cob.addAttribute(DaktelaSchema.ATTR_PASSWORD, user.getPassword());
-        cob.addAttribute(DaktelaSchema.ATTR_CLID, user.getClid());
-        cob.addAttribute(DaktelaSchema.ATTR_EMAIL, user.getEmail());
 
-        resultsHandler.handle(cob.build());
+        return cob.build();
     }
 
     @Override
@@ -325,24 +310,16 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
 
             switch (name) {
 
+                case DaktelaSchema.ATTR_EMAIL:
+                    user.setEmail(value);
+                    userChanged = true;
+                    break;
                 case DaktelaSchema.ATTR_ALIAS:
                     user.setAlias(value);
                     userChanged = true;
                     break;
                 case DaktelaSchema.ATTR_DESCRIPTION:
                     user.setDescription(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_PASSWORD:
-                    user.setPassword(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_CLID:
-                    user.setClid(value);
-                    userChanged = true;
-                    break;
-                case DaktelaSchema.ATTR_EMAIL:
-                    user.setEmail(value);
                     userChanged = true;
                     break;
             }
