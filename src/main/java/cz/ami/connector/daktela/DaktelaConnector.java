@@ -35,7 +35,15 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         this.configuration = (DaktelaConfiguration) configuration;
         connection = new DaktelaConnection(this.configuration);
     }
-    
+
+    DaktelaConnection getConnection(){
+        return connection;
+    }
+
+    void setConnection(DaktelaConnection connection) {
+        this.connection = connection;
+    }
+
     @Override
     public void dispose() {
         // TODO Auto-generated method stub

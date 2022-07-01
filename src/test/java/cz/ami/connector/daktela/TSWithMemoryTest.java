@@ -65,8 +65,8 @@ public class TSWithMemoryTest {
         TSWithMemory serverWithMemory = TSWithMemory.createServerForTesting();
 
         assertNotNull(serverWithMemory, " test server before the test method");
-        assertNotNull(DaktelaConnection.getINST(), " connection check");
-        assertEquals(TSWithMemory.TEST_SERVER_URI, DaktelaConnection.getINST().getUriSource()," check server URI got from connection");
+        assertNotNull(connector.getConnection(), " connection check");
+        assertEquals(TSWithMemory.TEST_SERVER_URI, connector.getConnection().getUriSource()," check server URI got from connection");
 
 
         Map<String, Object> map1 = Map.of(
@@ -96,7 +96,7 @@ public class TSWithMemoryTest {
         uid = connector.create(new ObjectClass("User"), set2, null);
         assertEquals("user2", uid.getUidValue());
 
-        List<User> userList = DaktelaConnection.getINST().readAll(User.class);
+        List<User> userList = connector.getConnection().readAll(User.class);
         Map<String,User> users = new HashMap<>();
         LOG.debug("added to map, number of items=" + userList.size());
         userList.forEach(user -> {
@@ -120,7 +120,7 @@ public class TSWithMemoryTest {
         Set<Attribute> set3 =createAttributeSetFromMap(map3);
         connector.update(new ObjectClass("User"), new Uid("user2"), set3, null);
 
-        User user2Changed = DaktelaConnection.getINST().read("user2",User.class);
+        User user2Changed = connector.getConnection().read("user2",User.class);
         assertUserFields(map3, user2Changed,"user2", " checking user2 after change and read ");
 
     }

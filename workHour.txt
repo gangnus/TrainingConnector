@@ -22,7 +22,15 @@ Petr
                 Log for body of prepared request implemented.
 19.06.2022: 2h Build+install+launch bat file, check of real json strings
 20.06.2022: 9h test server with memory for full imitation of the real Daktela Server
+21.06.2022: 8h Lab1 from AMI Akademia
+22.06.2022: 8h Lab1 from AMI Akademia
+23.06.2022: 8h Lab1,2 from AMI Akademia
+24.06.2022: 8h Lab2 from AMI Akademia
 
+27.06.2022: 8h Lab3,4 from AMI Akademia
+28.06.2022: 8h Lab3,4 from AMI Akademia
+29.06.2022: 8h Lab4 from AMI Akademia
+30.06.2022: 8h Lab4,5 from AMI Akademia
 
 Tomas
 02.6.2022: 3,5h

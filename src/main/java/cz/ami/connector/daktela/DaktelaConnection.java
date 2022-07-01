@@ -60,7 +60,13 @@ public class DaktelaConnection {
     DaktelaConfiguration getConfiguration() {
         return configuration;
     }
+    public String getUriSource() {
+        return configuration.getServiceAddress();
+    }
 
+    public Integer getTimeout() {
+        return configuration.getTimeout();
+    }
     /**
      * URI parts starting from the server address and ending before the name of the item
      * a URI part for a possible item class

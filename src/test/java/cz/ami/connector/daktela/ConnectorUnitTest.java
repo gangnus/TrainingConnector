@@ -55,7 +55,7 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
         Map<String, Object> map = Map.of(
             Uid.NAME,"user1",
             Name.NAME, "Professor User",
@@ -87,7 +87,7 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
 
         Map<String, Object> map = Map.of(
             Name.NAME,"Professor User",
@@ -117,7 +117,7 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
 
         Set<AttributeDelta> set =createDeltaSetFromMap(new HashMap<>());
 
@@ -135,7 +135,7 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
         Map<String, Object> map = Map.of(
             Uid.NAME, "NewUser",
             Name.NAME, "Professor User"
@@ -154,7 +154,7 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
 
         Map<String, Object> map = Map.of(
             Name.NAME,"Professor User",
@@ -184,9 +184,11 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
 
-        Set<Attribute> set =createAttributeSetFromMap(new HashMap<>());
+        Set<Attribute> set =createAttributeSetFromMap(new HashMap<>(){{
+            put(Uid.NAME,"bad_user");
+        }});
         Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
         });
@@ -201,7 +203,7 @@ class ConnectorUnitTest {
 
         DaktelaConfiguration configuration = new DaktelaConfiguration();
         connector.init(configuration);
-        DaktelaConnection.changeINST(mockConnection);
+        connector.setConnection(mockConnection);
         Map<String, Object> map = Map.of(
             Uid.NAME,"NewUser",
             Name.NAME,"Professor User"

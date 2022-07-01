@@ -28,7 +28,7 @@ class ConnectionFunctionalTest {
     public void TestReadFromTestServer() throws Exception {
 
 
-        User user = DaktelaConnection.getINST().read("Novak", User.class);
+        User user = connector.getConnection().read("Novak", User.class);
         String jsonStringMust = TestResourceFiles.readStringContentFromFile("novak.json");
 
         User userFromFile  = gson.fromJson(jsonStringMust, User.class);
@@ -42,7 +42,7 @@ class ConnectionFunctionalTest {
     @Test
     public void TestReadAllThroughConnection() throws Exception {
 
-        List<User> usersFromServer = DaktelaConnection.getINST().readAll(User.class);
+        List<User> usersFromServer = connector.getConnection().readAll(User.class);
 
         String jsonStringMust =
                 "[" +
