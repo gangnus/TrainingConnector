@@ -4,14 +4,14 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
-public class Users {
+public class DaktelaUserListResponse {
 
     private String[] error;
-    private UsersData result;
+    private UserList result;
     @SerializedName("_time")
     private String time;
 
-    public class UsersData {
+    public class UserList {
         private DaktelaUser[] data;
         private int total;
 

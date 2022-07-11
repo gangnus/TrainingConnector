@@ -17,7 +17,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -27,7 +26,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Flow;
 
 
 public class DaktelaConnection {
@@ -65,17 +63,22 @@ public class DaktelaConnection {
     DaktelaConfiguration getConfiguration() {
         return configuration;
     }
-    public String getUriSource() {
-        return configuration.getServiceAddress();
-    }
-
-    public Integer getTimeout() {
-        return configuration.getTimeout();
-    }
 
     static private void errorReaction(String message){
         LOG.error(message);
         throw new ConnectorException(message);
+    }
+
+    private String makeRequest(String uid) {
+        LOG.debug("Reading item uid={}", uid);
+        HttpRequest request = preprepareRequest(null, uid).GET().build();
+        LOG.debug("Request uri: {}", request.uri().toString());
+        LOG.debug("Request info: {}", request.headers());
+
+        HttpResponse<String> response = sendRequest(request);
+        String jsonString = response.body();
+        LOG.debug("response body: {}", jsonString);
+        return jsonString;
     }
 
     /**
@@ -84,16 +87,8 @@ public class DaktelaConnection {
      * @param itemClass class of objects to be operated with
      */
     public DaktelaUser read(String uid, Class itemClass){
-        LOG.debug("----------- before single user request -----------------");
-        LOG.debug("Reading of item-" + itemClass.getSimpleName() + ", name="+ uid);
-        HttpRequest request = preprepareRequest(DaktelaUser.class, uid).GET().build();
-
-        LOG.debug("------------------- a request created, but not sent yet --------------------- ");
-        HttpResponse<String> response = sendRequest(request);
-        String jsonString = response.body();
-        LOG.debug("----------- ready jsonString -----------------");
-        LOG.debug(jsonString);
-        UsersOne a = gson.fromJson(jsonString, UsersOne.class);
+        String jsonString = makeRequest(uid);
+        DaktelaUserResponse a = gson.fromJson(jsonString, DaktelaUserResponse.class);
         DaktelaUser b = a.getResult();
         return b;
     }
@@ -104,18 +99,9 @@ public class DaktelaConnection {
      * @param itemClass class of objects to be operated with
      */
     public List<DaktelaUser> readAll(Class itemClass) {
-        HttpRequest request = preprepareRequest(DaktelaUser.class, null).GET().build();
-        LOG.debug("Reading all item of class {}", itemClass.getSimpleName());
-        LOG.debug("Request info: {}", request.uri().toString());
-        LOG.debug("Request info: {}", request.headers());
-
-        HttpResponse<String> response = sendRequest(request);
-        String jsonString = response.body();
-        LOG.debug("response body: {}", jsonString);
-
-
-        Users a = new Gson().fromJson(jsonString, Users.class);
-        Users.UsersData b = a.getResult();
+        String jsonString = makeRequest(null);
+        DaktelaUserListResponse a = new Gson().fromJson(jsonString, DaktelaUserListResponse.class);
+        DaktelaUserListResponse.UserList b = a.getResult();
         DaktelaUser[] c = b.getData();
         return List.of(c);
     }
@@ -128,10 +114,10 @@ public class DaktelaConnection {
     public void createRecord( Item item) {
         LOG.debug("Creation of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
-        String opMessage = "single "+ item.getClass().getSimpleName() + " creation ";
         HttpRequest request = preprepareRequest(DaktelaUser.class, null)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8))).build();
         HttpResponse<String> response = sendRequest(request);
+        LOG.debug("Response accepted");
         checkResponseStatus("Creation ", item.getClass(), response);
     }
 
@@ -143,7 +129,6 @@ public class DaktelaConnection {
     public void updateRecord(Item item) {
         LOG.debug("Update of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
-        String opMessage = "single "+ item.getClass().getSimpleName() + " update ";
         HttpRequest request = preprepareRequest(DaktelaUser.class, null)
                 .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8))).build();
         HttpResponse<String> response = sendRequest(request);
@@ -222,7 +207,7 @@ public class DaktelaConnection {
         LOG.debug("Response status code {}", response.statusCode());
         return response;
     }
-
+/*
     static final class StringSubscriber implements Flow.Subscriber<ByteBuffer> {
         final HttpResponse.BodySubscriber<String> wrapped;
         StringSubscriber(HttpResponse.BodySubscriber<String> wrapped) {
@@ -255,4 +240,5 @@ public class DaktelaConnection {
         }
 
     }
+*/
 }

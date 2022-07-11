@@ -3,7 +3,8 @@ package cz.ami.connector.daktela;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import cz.ami.connector.daktela.model.DaktelaUser;
-import cz.ami.connector.daktela.model.UsersOne;
+import cz.ami.connector.daktela.model.DaktelaUserListResponse;
+import cz.ami.connector.daktela.model.DaktelaUserResponse;
 import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
@@ -89,7 +90,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             if (filter == null) {
                 // všechny objekty
                 LOG.debug("reading all users");
-                List<DaktelaUser> users = connection.readAll(DaktelaUser.class);
+                List<DaktelaUser> users = connection.readAll(DaktelaUserResponse.class);
                 LOG.debug("get {} objects from end system", users.size());
                 users.forEach(user -> resultsHandler.handle(DaktelaSchema.createConnectorObject(user)));
             } else if (filter.getClass().getName().equals("org.identityconnectors.framework.common.objects.filter.EqualsFilter")) {
@@ -101,7 +102,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
                 LOG.debug("EqualsFilter, attribute value: {}", attrValue);
                 if (attrName == Uid.NAME) {
                     LOG.debug("EqualsFilter, search by UID");
-                    DaktelaUser user = connection.read(attrValue, UsersOne.class);
+                    DaktelaUser user = connection.read(attrValue, DaktelaUserListResponse.class);
                     resultsHandler.handle(DaktelaSchema.createConnectorObject(user));
                 } else {
                     throw new ConnectorException("search by " + attrName + " not implemented");

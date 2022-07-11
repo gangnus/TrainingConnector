@@ -9,7 +9,7 @@ import java.util.List;
 // As the source often has errors about using the "s" at the end of words, we definitely cannot rely on them.
 //
 @Data
-public class User extends Item {
+public class DaktelaUser extends Item {
 
     private String alias;
     private Role role;
@@ -43,7 +43,7 @@ public class User extends Item {
     private Boolean deactivated;
     private Boolean deleted;
 
-    public User(String name, String title, String description, String alias, String password, String clid, String email) {
+    public DaktelaUser(String name, String title, String description, String alias, String password, String clid, String email) {
         this.setName(name);
         this.setTitle(title);
         this.setDescription(description);
@@ -53,5 +53,5 @@ public class User extends Item {
         this.email = email;
     }
 
-    public User() {}
+    public DaktelaUser() {}
 }

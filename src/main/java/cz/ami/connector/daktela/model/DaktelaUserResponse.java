@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
-public class UsersOne {
+public class DaktelaUserResponse {
 
     private String[] error;
     private DaktelaUser result;
