@@ -38,7 +38,7 @@ public class DaktelaConnection {
 
     //TODO nepoužívá se zatím
     private static final Map<Class<? extends Item>, String> uriForClass = ImmutableMap.of(
-            User.class,"users",
+            DaktelaUser.class,"users",
             Role.class,"roles");
 
     private static final Trace LOG = TraceManager.getTrace(DaktelaConnection.class);
@@ -83,10 +83,10 @@ public class DaktelaConnection {
      * URI = something as /api/v6/users/{NAME}.json
      * @param itemClass class of objects to be operated with
      */
-    public User read(String uid, Class itemClass){
+    public DaktelaUser read(String uid, Class itemClass){
         LOG.debug("----------- before single user request -----------------");
         LOG.debug("Reading of item-" + itemClass.getSimpleName() + ", name="+ uid);
-        HttpRequest request = preprepareRequest(User.class, uid).GET().build();
+        HttpRequest request = preprepareRequest(DaktelaUser.class, uid).GET().build();
 
         LOG.debug("------------------- a request created, but not sent yet --------------------- ");
         HttpResponse<String> response = sendRequest(request);
@@ -94,7 +94,7 @@ public class DaktelaConnection {
         LOG.debug("----------- ready jsonString -----------------");
         LOG.debug(jsonString);
         UsersOne a = gson.fromJson(jsonString, UsersOne.class);
-        User b = a.getResult();
+        DaktelaUser b = a.getResult();
         return b;
     }
 
@@ -103,8 +103,8 @@ public class DaktelaConnection {
      * URI = something as /api/v6/users.json
      * @param itemClass class of objects to be operated with
      */
-    public List<User> readAll(Class itemClass) {
-        HttpRequest request = preprepareRequest(User.class, null).GET().build();
+    public List<DaktelaUser> readAll(Class itemClass) {
+        HttpRequest request = preprepareRequest(DaktelaUser.class, null).GET().build();
         LOG.debug("Reading all item of class {}", itemClass.getSimpleName());
         LOG.debug("Request info: {}", request.uri().toString());
         LOG.debug("Request info: {}", request.headers());
@@ -116,7 +116,7 @@ public class DaktelaConnection {
 
         Users a = new Gson().fromJson(jsonString, Users.class);
         Users.UsersData b = a.getResult();
-        User[] c = b.getData();
+        DaktelaUser[] c = b.getData();
         return List.of(c);
     }
 
@@ -129,7 +129,7 @@ public class DaktelaConnection {
         LOG.debug("Creation of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " creation ";
-        HttpRequest request = preprepareRequest(User.class, null)
+        HttpRequest request = preprepareRequest(DaktelaUser.class, null)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8))).build();
         HttpResponse<String> response = sendRequest(request);
         checkResponseStatus("Creation ", item.getClass(), response);
@@ -144,7 +144,7 @@ public class DaktelaConnection {
         LOG.debug("Update of item-" + item.getClass().getSimpleName() + ", name="+ item.getName());
         String jsonString = gson.toJson(item);
         String opMessage = "single "+ item.getClass().getSimpleName() + " update ";
-        HttpRequest request = preprepareRequest(User.class, null)
+        HttpRequest request = preprepareRequest(DaktelaUser.class, null)
                 .PUT(HttpRequest.BodyPublishers.ofByteArray(jsonString.getBytes(StandardCharsets.UTF_8))).build();
         HttpResponse<String> response = sendRequest(request);
         LOG.debug("Response accepted");

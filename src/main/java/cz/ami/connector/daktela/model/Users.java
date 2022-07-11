@@ -12,10 +12,10 @@ public class Users {
     private String time;
 
     public class UsersData {
-        private User[] data;
+        private DaktelaUser[] data;
         private int total;
 
-        public User[] getData() { return data; }
+        public DaktelaUser[] getData() { return data; }
     }
 
 }

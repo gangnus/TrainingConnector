@@ -2,7 +2,7 @@ package cz.ami.connector.daktela;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import cz.ami.connector.daktela.model.User;
+import cz.ami.connector.daktela.model.DaktelaUser;
 import cz.ami.connector.daktela.model.UsersOne;
 import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -89,9 +89,9 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             if (filter == null) {
                 // všechny objekty
                 LOG.debug("reading all users");
-                List<User> users = connection.readAll(User.class);
+                List<DaktelaUser> users = connection.readAll(DaktelaUser.class);
                 LOG.debug("get {} objects from end system", users.size());
-                users.forEach(user -> resultsHandler.handle(makeConnectorUser(user)));
+                users.forEach(user -> resultsHandler.handle(DaktelaSchema.createConnectorObject(user)));
             } else if (filter.getClass().getName().equals("org.identityconnectors.framework.common.objects.filter.EqualsFilter")) {
                 // jeden objekt
                 EqualsFilter equalsFilter = (EqualsFilter)filter;
@@ -101,8 +101,8 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
                 LOG.debug("EqualsFilter, attribute value: {}", attrValue);
                 if (attrName == Uid.NAME) {
                     LOG.debug("EqualsFilter, search by UID");
-                    User user = connection.read(attrValue, UsersOne.class);
-                    resultsHandler.handle(makeConnectorUser(user));
+                    DaktelaUser user = connection.read(attrValue, UsersOne.class);
+                    resultsHandler.handle(DaktelaSchema.createConnectorObject(user));
                 } else {
                     throw new ConnectorException("search by " + attrName + " not implemented");
                 }
@@ -118,7 +118,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             errorReaction("attributes not provided or empty");
         }
         Uid uid = null;
-        if (objectClass.getObjectClassValue().equals(User.class.getSimpleName())) {
+        if (objectClass.getObjectClassValue().equals(DaktelaUser.class.getSimpleName())) {
             uid = createUser(set);
         }
 
@@ -128,7 +128,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
     @Nullable
     private Uid createUser(Set<Attribute> set) {
         Uid uid = null;
-        User user = new User();
+        DaktelaUser user = new DaktelaUser();
 
         if (set != null){
             for (Attribute attribute : set) {
@@ -145,7 +145,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         return uid;
     }
 
-    private Uid insertAttrIntoANewUser(User user, Attribute attribute) {
+    private Uid insertAttrIntoANewUser(DaktelaUser user, Attribute attribute) {
         Uid uid = null;
         String name = attribute.getName();
         String value = null;
@@ -163,7 +163,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             user.setName(value);
         }
         else {
-            insertNonUidPropertyIntoUser(user, name, value);
+            //insertNonUidPropertyIntoUser(user, name, value);
         }
         return uid;
     }
@@ -232,24 +232,6 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         }
         return null;
     }*/
-    /**
-     *  udelat objekt pro IdM
-      */
-    private ConnectorObject makeConnectorUser(User user){
-        ConnectorObjectBuilder cob = new ConnectorObjectBuilder();
-        cob.setObjectClass(DaktelaSchema.CLASS_USER);
-
-        cob.setUid(user.getName());
-        cob.setName(user.getTitle());
-        cob.addAttribute(DaktelaSchema.ATTR_EMAIL, user.getEmail());
-        if (user.getProfile() != null) {
-            cob.addAttribute(DaktelaSchema.ATTR_PROFILE_TITLE, user.getProfile().getTitle());
-        }
-        cob.addAttribute(DaktelaSchema.ATTR_ALIAS, user.getAlias());
-        cob.addAttribute(DaktelaSchema.ATTR_DESCRIPTION, user.getDescription());
-
-        return cob.build();
-    }
 
     @Override
     public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> set, OperationOptions operationOptions) {
@@ -259,13 +241,13 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         if (set == null || set.isEmpty()) {
             return uid;
         }
-        if (objectClass.getObjectClassValue().equals(User.class.getSimpleName())){
-            User user = new User();
+        if (objectClass.getObjectClassValue().equals(DaktelaUser.class.getSimpleName())){
+            DaktelaUser user = new DaktelaUser();
             user.setName(uid.getUidValue());
             Boolean userChanged = false;
             if (set != null) {
                 for (Attribute attribute : set) {
-                    userChanged = insertAttrIntoUser(uid, user, attribute) || userChanged;
+                    //userChanged = insertAttrIntoUser(uid, user, attribute) || userChanged;
                 }
             }
             if (userChanged) {
@@ -274,8 +256,8 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         }
         return uid;
     }
-
-    private Boolean insertAttrIntoUser(Uid uid, User user, Attribute attribute) {
+/*
+    private Boolean insertAttrIntoUser(Uid uid, DaktelaUser user, Attribute attribute) {
         Boolean userChanged = false;
         String name = attribute.getName();
         String value = null;
@@ -300,7 +282,7 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
         return userChanged;
     }
 
-    private Boolean insertNonUidPropertyIntoUser(User user, String name, String value) {
+    private Boolean insertNonUidPropertyIntoUser(DaktelaUser user, String name, String value) {
         Boolean userChanged = false;
         if (name.equals(Name.NAME)) {
             // __NAME__
@@ -325,4 +307,6 @@ public class DaktelaConnector implements Connector, CreateOp, TestOp, SchemaOp, 
             }
         return userChanged;
     }
+ */
+
 }

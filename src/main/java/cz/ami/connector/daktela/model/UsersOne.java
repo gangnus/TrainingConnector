@@ -7,7 +7,7 @@ import lombok.Data;
 public class UsersOne {
 
     private String[] error;
-    private User result;
+    private DaktelaUser result;
     @SerializedName("_time")
     private String time;
 
