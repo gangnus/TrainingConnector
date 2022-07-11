@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class Role extends Item {
 
-    private String[] shortcuts;
+    //private String[] shortcuts;
     //private String options;
     // _sys
 }

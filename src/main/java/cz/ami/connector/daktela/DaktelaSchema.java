@@ -15,7 +15,7 @@ public class DaktelaSchema {
     private static final String ATTR_TITLE = "title"; // ICFS NAME
     private static final String ATTR_DESCRIPTION = "description";
     private static final String ATTR_ALIAS = "alias";
-    private static final String ATTR_EMAIL = "e-mail";
+    private static final String ATTR_EMAIL = "email";
     private static final String ATTR_EMOJI = "emoji";
     private static final String ATTR_ICON = "icon";
     private static final String ATTR_DELETED = "deleted";

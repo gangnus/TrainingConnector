@@ -70,7 +70,7 @@
                 <configuration>
                     <source>${project.source.version}</source>
                     <target>${project.source.version}</target>
-                    <encoding>UTF-8</encoding>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
 
