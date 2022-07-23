@@ -24,17 +24,17 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>Daktela Connector</name>
+    <name>Training Connector</name>
 
     <properties>
-        <connectorPackage>cz.ami.connector.daktela</connectorPackage>
-        <connectorClass>DaktelaConnector</connectorClass>
+        <connectorPackage>cz.ami.connector.training</connectorPackage>
+        <connectorClass>TrainingConnector</connectorClass>
         <bundle.name>${project.groupId}.${project.artifactId}</bundle.name>
         <bundle.version>${project.version}</bundle.version>
-        <project.source.version>11</project.source.version>
+        <project.source.version>0.0.1</project.source.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <connId.version>1.5.0.18</connId.version>
-        <midpoint.version>4.4.1</midpoint.version>
+        <midpoint.version>4.4</midpoint.version>
     </properties>
 
     <repositories>
@@ -135,6 +135,13 @@
             <version>2.8.7</version>
             <scope>provided</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

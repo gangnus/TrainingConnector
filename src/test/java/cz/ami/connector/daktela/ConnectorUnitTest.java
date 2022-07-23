@@ -1,5 +1,6 @@
 package cz.ami.connector.daktela;
 
+import cz.ami.connector.daktela.data.Users;
 import cz.ami.connector.daktela.model.User;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
@@ -16,20 +17,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ConnectorUnitTest {
-    @Mock
-    DaktelaConnection mockConnection;
-    @InjectMocks
-    DaktelaConnector connector;
-    @Captor
-    ArgumentCaptor<User> userCaptor;
+    TrainingConnector connector = new TrainingConnector();
 
-    static Set<AttributeDelta> createDeltaSetFromMap(Map<String, Object> map){
-        Set<AttributeDelta> set = new HashSet<>();
-        map.forEach((name,value) -> {
-           set.add(AttributeDeltaBuilder.build(name,Arrays.asList(value)));
-        });
-        return set;
-    }
     static Set<Attribute> createAttributeSetFromMap(Map<String, Object> map){
         Set<Attribute> set = new HashSet<>();
         map.forEach((name,value) -> {
@@ -39,141 +28,47 @@ class ConnectorUnitTest {
     }
     static void assertUserFields(Map<String, Object> map, User user, String uid, String message){
         assertEquals(uid, user.getName(),message);
-        assertEquals(map.get(Name.NAME), user.getTitle(),message);
-        assertEquals(map.get(DaktelaSchema.ATTR_ALIAS), user.getAlias(),message);
-        assertEquals(map.get(DaktelaSchema.ATTR_DESCRIPTION), user.getDescription(),message);
-        assertEquals(map.get(DaktelaSchema.ATTR_PASSWORD), user.getPassword(),message);
-        assertEquals(map.get(DaktelaSchema.ATTR_CLID), user.getClid(),message);
-        assertEquals(map.get(DaktelaSchema.ATTR_EMAIL), user.getEmail(),message);
+        assertEquals(map.get(ConnectorSchema.ATTR_PASSWORD), user.getPassword(),message);
+        assertEquals(map.get(ConnectorSchema.ATTR_FULLNAME), user.getFullName(),message);
     }
 
-    /** -------------- test a correct creation of a user
-     *
-     */
-    @Test
-    public void testCreateAllBaseFieldsCorrect() {
 
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        connector.init(configuration);
-        connector.setConnection(mockConnection);
-        Map<String, Object> map = Map.of(
-            Uid.NAME,"user1",
-            Name.NAME, "Professor User",
-            DaktelaSchema.ATTR_ALIAS, "alias Prof",
-            DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof",
-            DaktelaSchema.ATTR_PASSWORD, "pwdPWD",
-            DaktelaSchema.ATTR_CLID, "+420 000 111 222",
-            DaktelaSchema.ATTR_EMAIL, "prof@uni.com"
-        );
 
-        Set<Attribute> set = createAttributeSetFromMap(map);
-
-        doNothing().when(mockConnection).createRecord(userCaptor.capture());
-
-        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
-
-        verify(mockConnection).createRecord(userCaptor.capture());
-        // assert user fields
-        assertUserFields(map, userCaptor.getValue(), "user1", " user fields ");
-
-        assertEquals("user1", uidCreated.getUidValue(), "assert returned value");
-    }
-
-    /** -------------- test updateDelta - a correct update of a user
-     *
-      */
-    @Test
-    public void testUpdateDeltaAllBaseFieldsCorrect() {
-
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        connector.init(configuration);
-        connector.setConnection(mockConnection);
-
-        Map<String, Object> map = Map.of(
-            Name.NAME,"Professor User",
-            DaktelaSchema.ATTR_ALIAS, "alias Prof",
-            DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof",
-            DaktelaSchema.ATTR_PASSWORD, "pwdPWD",
-            DaktelaSchema.ATTR_CLID, "+420 000 111 222",
-            DaktelaSchema.ATTR_EMAIL, "prof@uni.com"
-        );
-
-        Set<AttributeDelta> set =createDeltaSetFromMap(map);
-
-        //doNothing().when(mockConnection).updateRecord(userCaptor.capture());
-
-        //connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
-
-        //verify(mockConnection).updateRecord(userCaptor.capture());
-        //assertUserFields(map, userCaptor.getValue(), "user1", " user fields ");
-
-    }
-
-    /** -------------- test updateDelta - a correct update of aт empty user
-     *
-     */
-    @Test
-    public void testUpdateDeltaNoBaseFieldsCorrect() {
-
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        connector.init(configuration);
-        connector.setConnection(mockConnection);
-
-        Set<AttributeDelta> set =createDeltaSetFromMap(new HashMap<>());
-
-        //connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
-
-        //erify(mockConnection, never()).updateRecord(any());
-
-    }
-
-    /** -------------- test updateDelta - attempt to change a uid - must fail
-     *
-     */
-    @Test
-    public void testUpdateDeltaAttemptToChangeUid() {
-
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
-        connector.init(configuration);
-        connector.setConnection(mockConnection);
-        Map<String, Object> map = Map.of(
-            Uid.NAME, "NewUser",
-            Name.NAME, "Professor User"
-
-        );
-        /*ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
-            Set<AttributeDelta> set = createDeltaSetFromMap(map);
-            connector.updateDelta(new ObjectClass("User"), new Uid("user1"), set, null);
-        });*/
-    }
     /** -------------- test update - a correct update of a user
      *
      */
     @Test
-    public void testUpdateAllBaseFieldsCorrect() {
+    public void testAllBaseFieldsCorrect() throws Exception {
 
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        TrainingConfiguration configuration = new TrainingConfiguration();
         connector.init(configuration);
-        connector.setConnection(mockConnection);
+        Users.clearAll();
 
         Map<String, Object> map = Map.of(
-            Name.NAME,"Professor User",
-            DaktelaSchema.ATTR_ALIAS, "alias Prof",
-            DaktelaSchema.ATTR_DESCRIPTION, "test description for a prof",
-            DaktelaSchema.ATTR_PASSWORD, "pwdPWD",
-            DaktelaSchema.ATTR_CLID, "+420 000 111 222",
-            DaktelaSchema.ATTR_EMAIL, "prof@uni.com"
+                Uid.NAME,"user1",
+                Name.NAME, "user1",
+                ConnectorSchema.ATTR_FULLNAME, "Professor User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdPWD"
         );
 
-        Set<Attribute> set =createAttributeSetFromMap(map);
+        Set<Attribute> set = createAttributeSetFromMap(map);
+        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
+        assertUserFields(map, Users.read("user1"), "user1", "Creation user fields ");
+        assertEquals("user1", uidCreated.getUidValue(), "Creation assert returned uid value");
 
-        doNothing().when(mockConnection).updateRecord(userCaptor.capture());
-
+        map = Map.of(
+                ConnectorSchema.ATTR_FULLNAME, "Docent User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdpwd123"
+        );
+        set = createAttributeSetFromMap(map);
         Uid returnedUid = connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
 
-        verify(mockConnection).updateRecord(userCaptor.capture());
-        assertUserFields(map, userCaptor.getValue(), "user1", " user fields ");
-        assertEquals("user1", returnedUid.getUidValue(), "check returned uid");
+        assertUserFields(map, Users.read("user1"), "user1", "Updating user fields ");
+        assertEquals("user1", returnedUid.getUidValue(), "Updating check returned uid value");
+
+        connector.delete(new ObjectClass("User"), new Uid("user1"), null);
+        assertEquals(0, Users.getAll().size(),"deleting failed");
+
     }
 
     /** -------------- test update - an empty update should fail
@@ -182,16 +77,58 @@ class ConnectorUnitTest {
     @Test
     public void testUpdateNoFieldsShouldFail() {
 
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        TrainingConfiguration configuration = new TrainingConfiguration();
         connector.init(configuration);
-        connector.setConnection(mockConnection);
+        Users.clearAll();
 
         Set<Attribute> set =createAttributeSetFromMap(new HashMap<>(){{
-            put(Uid.NAME,"bad_user");
+            put(Uid.NAME,"user1");
+        }});
+        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
+
+        Assertions.assertThrows(ConnectorException.class, () -> {
+            connector.update(new ObjectClass("User"), uidCreated, set, null);
+        });
+
+    }
+
+    /** -------------- test update - an update for nonexistent user should fail
+     *
+     */
+    @Test
+    public void testUpdateNonexistentShouldFail() {
+
+        TrainingConfiguration configuration = new TrainingConfiguration();
+        connector.init(configuration);
+        Users.clearAll();
+
+        Set<Attribute> set =createAttributeSetFromMap(new HashMap<>(){{
+            put(Uid.NAME,"user1");
+            put( ConnectorSchema.ATTR_PASSWORD,"111");
+
         }});
         Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
         });
+
+    }
+
+    /** -------------- test creation - a user with uid only
+     *
+     */
+    @Test
+    public void testCreateUserwithUidOnly() {
+
+        TrainingConfiguration configuration = new TrainingConfiguration();
+        connector.init(configuration);
+        Users.clearAll();
+
+        Set<Attribute> set =createAttributeSetFromMap(new HashMap<>(){{
+            put(Uid.NAME,"emptyUser");
+        }});
+        Uid uid = connector.create(new ObjectClass("User"), set, null);
+        Assertions.assertEquals("emptyUser", uid.getUidValue(), "creation - a user with uid only");
+
 
     }
 
@@ -201,22 +138,91 @@ class ConnectorUnitTest {
     @Test
     public void testUpdateAttemptToChangeUid() {
 
-        DaktelaConfiguration configuration = new DaktelaConfiguration();
+        TrainingConfiguration configuration = new TrainingConfiguration();
         connector.init(configuration);
-        connector.setConnection(mockConnection);
+        Users.clearAll();
+
         Map<String, Object> map = Map.of(
-            Uid.NAME,"NewUser",
-            Name.NAME,"Professor User"
+                Uid.NAME, "user1",
+                Name.NAME, "user1",
+                ConnectorSchema.ATTR_FULLNAME, "Professor User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdPWD"
+        );
+
+        Set<Attribute> set = createAttributeSetFromMap(map);
+        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
+
+        map = Map.of(
+                Uid.NAME, "NewUser",
+                Name.NAME, "Professor User"
 
         );
+        Set<Attribute> changedSet = createAttributeSetFromMap(map);
         ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
-            Set<Attribute> set =createAttributeSetFromMap(map);
-            connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
+            connector.update(new ObjectClass("User"), new Uid("user1"), changedSet, null);
         });
+    }
+    /** -------------- test update - change user giving excessive uid info
+     *
+     */
+    @Test
+    public void testUpdateWithExcessiveUid() throws Exception {
 
+        TrainingConfiguration configuration = new TrainingConfiguration();
+        connector.init(configuration);
+        Users.clearAll();
 
+        Map<String, Object> map = Map.of(
+                Uid.NAME,"user1",
+                Name.NAME, "user1",
+                ConnectorSchema.ATTR_FULLNAME, "Professor User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdPWD"
+        );
+
+        Set<Attribute> set = createAttributeSetFromMap(map);
+        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
+
+        Map<String, Object> map2 = Map.of(
+                Uid.NAME,"user1",
+                Name.NAME, "user1",
+                ConnectorSchema.ATTR_FULLNAME, "Docent User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdpwd123"
+        );
+        Set<Attribute>  changedSet =createAttributeSetFromMap(map2);
+
+        connector.update(new ObjectClass("User"), new Uid("user1"), changedSet, null);
+        assertUserFields(map2, Users.read("user1"), "user1", "Updating user fields ");
 
     }
+    /** -------------- test create - attempt to create twice - must fail
+     *
+     */
+    @Test
+    public void testCreateAttemptTwice() {
+        TrainingConfiguration configuration = new TrainingConfiguration();
+        connector.init(configuration);
+        Users.clearAll();
 
+        Map<String, Object> map = Map.of(
+                Uid.NAME,"user1",
+                Name.NAME, "user1",
+                ConnectorSchema.ATTR_FULLNAME, "Professor User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdPWD"
+        );
+
+        Set<Attribute> set = createAttributeSetFromMap(map);
+        Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
+
+        Map<String, Object> map2 = Map.of(
+                Uid.NAME,"user1",
+                Name.NAME, "user1",
+                ConnectorSchema.ATTR_FULLNAME, "Docent User",
+                ConnectorSchema.ATTR_PASSWORD, "pwdpwd123"
+        );
+        Set<Attribute> set2 = createAttributeSetFromMap(map2);
+        ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
+            connector.create(new ObjectClass("User"), set2, null);
+        });
+    }
 
 }
