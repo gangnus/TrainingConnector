@@ -47,6 +47,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public void delete(ObjectClass objectClass, Uid uid, OperationOptions options) {
+        LOG.info(">>> delete of the user with UID = " + uid.getUidValue());
         if (uid == null) {
             ProblemsAndErrors.uncheckedExcReaction(LOG, "uid for deleting not provided");
         }
@@ -55,7 +56,9 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
         } catch (Exception e) {
             ProblemsAndErrors.uncheckedExcReaction(LOG, "Deleting failed");
         }
+        LOG.info(">>> delete of the user with UID = " + uid.getUidValue());
     }
+
     @Override
     public TrainingConfiguration getConfiguration() {
         return this.configuration;
@@ -63,14 +66,15 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public Schema schema() {
-        LOG.trace("Training connector getting schema");
+        LOG.info("Training connector getting schema");
         return ConnectorSchema.getSchema();
     }
 
 	@Override
 	public void test() {
-		// TODO do something
-	    schema();
+        LOG.info(">>> test training connector");
+        schema();
+        LOG.info("<<< test training connector");
 	}
 
     @Override
@@ -121,6 +125,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public Uid create(ObjectClass objectClass, Set<Attribute> set, OperationOptions operationOptions) {
+        LOG.info(">>> Creation User for Training Connector");
         // Check and clean the set from uids
         if (set == null || set.isEmpty()) {
             ProblemsAndErrors.uncheckedExcReaction(LOG,"attributes not provided or empty");
@@ -141,6 +146,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
                 ProblemsAndErrors.uncheckedExcReaction(LOG, "User creation failed");
             }
         }
+        LOG.info("<<< Creation User for Training Connector");
 
         return uid;
     }
@@ -171,7 +177,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> set, OperationOptions operationOptions) {
-        LOG.debug("Start update of the user with UID = " + uid.getUidValue());
+        LOG.info(">>> update of the user with UID = " + uid.getUidValue());
 
         // Check and clean the set from uids
         if (set == null || set.isEmpty()) {
@@ -203,6 +209,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
                 ProblemsAndErrors.uncheckedExcReaction(LOG,"user has not changed");
             }
         }
+        LOG.info("<<< update of the user with UID = " + uid.getUidValue());
         return uid;
     }
 
