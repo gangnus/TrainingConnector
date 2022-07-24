@@ -5,12 +5,11 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import cz.ami.connector.training.data.Users;
 import cz.ami.connector.training.model.User;
 import cz.ami.connector.training.tools.LogMessages;
-import org.hamcrest.Matchers;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.*;
 
@@ -29,9 +28,9 @@ class ConnectorUnitTest {
         return set;
     }
     static void assertUserFields(Map<String, Object> map, User user, String uid, String message){
-        assertEquals(uid, user.getName(),message);
-        assertEquals(map.get(ConnectorSchema.ATTR_PASSWORD), user.getPassword(),message);
-        assertEquals(map.get(ConnectorSchema.ATTR_FULLNAME), user.getFullName(),message);
+        Assertions.assertEquals(uid, user.getName(),message);
+        Assertions.assertEquals((String)map.get(ConnectorSchema.ATTR_PASSWORD), user.getPassword(),message);
+        Assertions.assertEquals((String)map.get(ConnectorSchema.ATTR_FULLNAME), user.getFullName(),message);
     }
 
 
@@ -56,7 +55,7 @@ class ConnectorUnitTest {
         Set<Attribute> set = createAttributeSetFromMap(map);
         Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
         assertUserFields(map, Users.read("user1"), "user1", "Creation user fields ");
-        assertEquals("user1", uidCreated.getUidValue(), "Creation assert returned uid value");
+        Assertions.assertEquals("user1", uidCreated.getUidValue(), "Creation assert returned uid value");
 
         map = Map.of(
                 ConnectorSchema.ATTR_FULLNAME, "Docent User",
@@ -66,10 +65,10 @@ class ConnectorUnitTest {
         Uid returnedUid = connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
 
         assertUserFields(map, Users.read("user1"), "user1", "Updating user fields ");
-        assertEquals("user1", returnedUid.getUidValue(), "Updating check returned uid value");
+        Assertions.assertEquals("user1", returnedUid.getUidValue(), "Updating check returned uid value");
 
         connector.delete(new ObjectClass("User"), new Uid("user1"), null);
-        assertEquals(0, Users.getAll().size(),"deleting failed");
+        Assertions.assertEquals(0, Users.getAll().size(),"deleting failed");
 
     }
 
