@@ -1,22 +1,24 @@
-package cz.ami.connector.daktela;
+package cz.ami.connector.training;
 
-import cz.ami.connector.daktela.data.Users;
-import cz.ami.connector.daktela.model.User;
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
+import cz.ami.connector.training.data.Users;
+import cz.ami.connector.training.model.User;
+import cz.ami.connector.training.tools.LogMessages;
+import org.hamcrest.Matchers;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ConnectorUnitTest {
+    private static final Trace LOG = TraceManager.getTrace(ConnectorUnitTest.class);
+
     TrainingConnector connector = new TrainingConnector();
 
     static Set<Attribute> createAttributeSetFromMap(Map<String, Object> map){
@@ -86,9 +88,11 @@ class ConnectorUnitTest {
         }});
         Uid uidCreated = connector.create(new ObjectClass("User"), set, null);
 
-        Assertions.assertThrows(ConnectorException.class, () -> {
+        ConnectorException exception = Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), uidCreated, set, null);
         });
+
+        Assertions.assertTrue(exception.getMessage().contains(LogMessages.ATTRIBUTES_NOT_PROVIDED_OR_EMPTY), "wrong exception message = " + exception.getMessage());
 
     }
 
@@ -107,9 +111,10 @@ class ConnectorUnitTest {
             put( ConnectorSchema.ATTR_PASSWORD,"111");
 
         }});
-        Assertions.assertThrows(ConnectorException.class, () -> {
+        ConnectorException exception = Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), new Uid("user1"), set, null);
         });
+        Assertions.assertTrue(exception.getMessage().contains(LogMessages.USER_UPDATING_FAILED), "wrong exception message = " + exception.getMessage());
 
     }
 
@@ -117,7 +122,7 @@ class ConnectorUnitTest {
      *
      */
     @Test
-    public void testCreateUserwithUidOnly() {
+    public void testCreateUserWithUidOnly() {
 
         TrainingConfiguration configuration = new TrainingConfiguration();
         connector.init(configuration);
@@ -136,7 +141,7 @@ class ConnectorUnitTest {
      *
      */
     @Test
-    public void testUpdateAttemptToChangeUid() {
+    public void testUpdateAttemptToChangeUidMustFail() {
 
         TrainingConfiguration configuration = new TrainingConfiguration();
         connector.init(configuration);
@@ -158,9 +163,11 @@ class ConnectorUnitTest {
 
         );
         Set<Attribute> changedSet = createAttributeSetFromMap(map);
-        ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
+        ConnectorException exception = Assertions.assertThrows(ConnectorException.class, () -> {
             connector.update(new ObjectClass("User"), new Uid("user1"), changedSet, null);
         });
+        Assertions.assertTrue(exception.getMessage().contains(LogMessages.CONTRADICTIONS_IN_UIDS_AND_OR_NAMES), "wrong exception message = " + exception.getMessage());
+
     }
     /** -------------- test update - change user giving excessive uid info
      *
@@ -198,7 +205,7 @@ class ConnectorUnitTest {
      *
      */
     @Test
-    public void testCreateAttemptTwice() {
+    public void testCreateAttemptTwiceMustFail() {
         TrainingConfiguration configuration = new TrainingConfiguration();
         connector.init(configuration);
         Users.clearAll();
@@ -220,9 +227,11 @@ class ConnectorUnitTest {
                 ConnectorSchema.ATTR_PASSWORD, "pwdpwd123"
         );
         Set<Attribute> set2 = createAttributeSetFromMap(map2);
-        ConnectorException thrown = Assertions.assertThrows(ConnectorException.class, () -> {
+        ConnectorException exception = Assertions.assertThrows(ConnectorException.class, () -> {
             connector.create(new ObjectClass("User"), set2, null);
         });
+        Assertions.assertTrue(exception.getMessage().contains(LogMessages.USER_CREATION_FAILED), "wrong exception message = " + exception.getMessage());
+
     }
 
 }

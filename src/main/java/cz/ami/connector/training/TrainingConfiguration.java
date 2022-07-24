@@ -1,8 +1,6 @@
-package cz.ami.connector.daktela;
+package cz.ami.connector.training;
 
-import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.spi.AbstractConfiguration;
-import org.identityconnectors.framework.spi.ConfigurationProperty;
 
 public class TrainingConfiguration extends AbstractConfiguration {
 

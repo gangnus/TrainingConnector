@@ -1,15 +1,14 @@
-package cz.ami.connector.daktela;
+package cz.ami.connector.training;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import cz.ami.connector.daktela.data.Users;
-import cz.ami.connector.daktela.model.User;
-import cz.ami.connector.daktela.tools.AttributesSets;
-import cz.ami.connector.daktela.tools.ProblemsAndErrors;
+import cz.ami.connector.training.data.Users;
+import cz.ami.connector.training.model.User;
+import cz.ami.connector.training.tools.AttributesSets;
+import cz.ami.connector.training.tools.LogMessages;
+import cz.ami.connector.training.tools.ProblemsAndErrors;
 import org.apache.commons.lang.StringUtils;
 import org.identityconnectors.common.CollectionUtil;
-import org.identityconnectors.framework.common.exceptions.ConnectorException;
-import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.identityconnectors.framework.common.objects.filter.Filter;
@@ -29,15 +28,15 @@ import java.util.Set;
  */
 @ConnectorClass(displayNameKey = "training.connector.display", configurationClass = TrainingConfiguration.class)
 public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp, SchemaOp, SearchOp<Filter>, UpdateOp {
+    private static final Trace LOG = TraceManager.getTrace(TrainingConnector.class);
 
-	private static final Trace LOG = TraceManager.getTrace(TrainingConnector.class);
     private TrainingConfiguration configuration;
 
     @Override
     public void init(Configuration configuration) {
-        LOG.info(">>> Initializing Training connector");
+        LOG.info(LogMessages.START_BY_ANGLE + LogMessages.INITIALIZING_TRAINING_CONNECTOR);
         this.configuration = (TrainingConfiguration) configuration;
-        LOG.info(">>> Training connector initialization finished");
+        LOG.info(LogMessages.FINISH_BY_ANGLE + LogMessages.INITIALIZING_TRAINING_CONNECTOR);
     }
 
     @Override
@@ -47,16 +46,16 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public void delete(ObjectClass objectClass, Uid uid, OperationOptions options) {
-        LOG.info(">>> delete of the user with UID = " + uid.getUidValue());
+        LOG.info(LogMessages.START_BY_ANGLE + LogMessages.DELETE_OF_THE_USER_WITH_UID + uid.getUidValue());
         if (uid == null) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG, "uid for deleting not provided");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.UID_FOR_DELETING_NOT_PROVIDED);
         }
         try {
             Users.delete(uid.getUidValue());
         } catch (Exception e) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG, "Deleting failed");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.DELETING_FAILED);
         }
-        LOG.info(">>> delete of the user with UID = " + uid.getUidValue());
+        LOG.info(LogMessages.FINISH_BY_ANGLE + LogMessages.DELETE_OF_THE_USER_WITH_UID + uid.getUidValue());
     }
 
     @Override
@@ -66,15 +65,16 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public Schema schema() {
-        LOG.info("Training connector getting schema");
+
         return ConnectorSchema.getSchema();
+
     }
 
 	@Override
 	public void test() {
-        LOG.info(">>> test training connector");
+        LOG.info(LogMessages.START_BY_ANGLE + LogMessages.TEST_TRAINING_CONNECTOR);
         schema();
-        LOG.info("<<< test training connector");
+        LOG.info(LogMessages.FINISH_BY_ANGLE + LogMessages.TEST_TRAINING_CONNECTOR);
 	}
 
     @Override
@@ -85,6 +85,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public void executeQuery(ObjectClass objectClass, Filter filter, ResultsHandler resultsHandler, OperationOptions options) {
+        LOG.info(LogMessages.START_BY_ANGLE + LogMessages.EXECUTE_QUERY_TRAINING_CONNECTOR);
         LOG.debug("SEARCH objectClass: " + objectClass);
         LOG.debug("SEARCH filter " + filter);
         LOG.debug("SEARCH options " + options);
@@ -112,29 +113,30 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
                     try {
                         user = Users.read(attrValue);
                     } catch (Exception e) {
-                        ProblemsAndErrors.uncheckedExcReaction(LOG,"Reading of one user failed.");
+                        ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.READING_OF_ONE_USER_FAILED);
                     }
                     resultsHandler.handle(ConnectorSchema.createConnectorObject(user));
                 } else {
-                    ProblemsAndErrors.uncheckedExcReaction(LOG,"search by " + attrName + " not implemented");
+                    ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.SEARCH_BY + attrName + LogMessages.NOT_IMPLEMENTED);
                 }
             }
         }
+        LOG.info(LogMessages.FINISH_BY_ANGLE + LogMessages.EXECUTE_QUERY_TRAINING_CONNECTOR);
 
     }
 
     @Override
     public Uid create(ObjectClass objectClass, Set<Attribute> set, OperationOptions operationOptions) {
-        LOG.info(">>> Creation User for Training Connector");
+        LOG.info(LogMessages.START_BY_ANGLE + LogMessages.CREATION_USER_FOR_TRAINING_CONNECTOR);
         // Check and clean the set from uids
         if (set == null || set.isEmpty()) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG,"attributes not provided or empty");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.ATTRIBUTES_NOT_PROVIDED_OR_EMPTY);
         }
         Uid uid = null;
         try {
             uid = getUidFromAttributesSet(set);
         } catch (Exception e) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG,"Attempt to create a user without uid");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.ATTEMPT_TO_CREATE_A_USER_WITHOUT_UID);
         }
 
         // use the set
@@ -143,10 +145,10 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
             try {
                 createUser(uid, set);
             } catch (Exception e) {
-                ProblemsAndErrors.uncheckedExcReaction(LOG, "User creation failed");
+                ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.USER_CREATION_FAILED);
             }
         }
-        LOG.info("<<< Creation User for Training Connector");
+        LOG.info(LogMessages.FINISH_BY_ANGLE + LogMessages.CREATION_USER_FOR_TRAINING_CONNECTOR);
 
         return uid;
     }
@@ -162,7 +164,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
         String uidFromSet = AttributesSets.extractSingle(set,Uid.NAME);
         String nameFromSet = AttributesSets.extractSingle(set,Name.NAME);
         if (StringUtils.isBlank(uidFromSet) && StringUtils.isBlank(nameFromSet)){
-            ProblemsAndErrors.checkedExcReaction(LOG,"No uids or names in the set.");
+            ProblemsAndErrors.checkedExcReaction(LOG, LogMessages.NO_UIDS_OR_NAMES_IN_THE_SET);
         }
         String uidString = null;
         if (!StringUtils.isBlank(uidFromSet)) {
@@ -177,19 +179,19 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public Uid update(ObjectClass objectClass, Uid uid, Set<Attribute> set, OperationOptions operationOptions) {
-        LOG.info(">>> update of the user with UID = " + uid.getUidValue());
+        LOG.info(LogMessages.START_BY_ANGLE + LogMessages.UPDATE_OF_THE_USER_WITH_UID + " = " + uid.getUidValue());
 
         // Check and clean the set from uids
         if (set == null || set.isEmpty()) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG,"attributes not provided or empty");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.ATTRIBUTES_NOT_PROVIDED_OR_EMPTY);
         }
         try {
             removeUidAndNameFromAttributesSet(uid, set);
         } catch (Exception e) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG,"Contradictions in uids and/or names");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.CONTRADICTIONS_IN_UIDS_AND_OR_NAMES);
         }
         if (set.isEmpty()) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG,"Nothing to update");
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.NOTHING_TO_UPDATE);
         }
 
         // use the set
@@ -203,13 +205,13 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
                 try {
                     Users.update(user);
                 } catch (Exception e) {
-                    ProblemsAndErrors.uncheckedExcReaction(LOG, "User updating failed");
+                    ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.USER_UPDATING_FAILED);
                 }
             } else {
-                ProblemsAndErrors.uncheckedExcReaction(LOG,"user has not changed");
+                ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.USER_HAS_NOT_CHANGED);
             }
         }
-        LOG.info("<<< update of the user with UID = " + uid.getUidValue());
+        LOG.info(LogMessages.FINISH_BY_ANGLE + LogMessages.UPDATE_OF_THE_USER_WITH_UID + " = " + uid.getUidValue());
         return uid;
     }
 
@@ -219,13 +221,13 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
         if (uidFromSet != null) {
             // uid attr was present
             if(!uidFromSet.equals(uid.getUidValue())){
-                ProblemsAndErrors.checkedExcReaction(LOG,"Contradictory uids. Uid from set = " + uidFromSet + ", uid by parameter = " + uid.getUidValue());
+                ProblemsAndErrors.checkedExcReaction(LOG, LogMessages.CONTRADICTORY_UIDS_UID_FROM_SET + uidFromSet + LogMessages.UID_BY_PARAMETER + uid.getUidValue());
             }
         }
         if (nameFromSet != null) {
             // name attribute was present
             if(!nameFromSet.equals(uid.getUidValue())){
-                ProblemsAndErrors.checkedExcReaction(LOG,"Contradictory uid and name. Name from set = " + nameFromSet + ", uid by parameter = " + uid.getUidValue());
+                ProblemsAndErrors.checkedExcReaction(LOG, LogMessages.CONTRADICTORY_UID_AND_NAME_FROM_SET + nameFromSet + LogMessages.UID_BY_PARAMETER + uid.getUidValue());
             }
         }
     }

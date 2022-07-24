@@ -1,11 +1,9 @@
-package cz.ami.connector.daktela.data;
+package cz.ami.connector.training.data;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import cz.ami.connector.daktela.model.User;
-import cz.ami.connector.daktela.tools.AttributesSets;
-import cz.ami.connector.daktela.tools.ProblemsAndErrors;
-import org.identityconnectors.framework.common.exceptions.ConnectorException;
+import cz.ami.connector.training.model.User;
+import cz.ami.connector.training.tools.ProblemsAndErrors;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;

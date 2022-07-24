@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela.tools;
+package cz.ami.connector.training.tools;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;

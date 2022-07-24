@@ -1,4 +1,4 @@
-package cz.ami.connector.daktela.model;
+package cz.ami.connector.training.model;
 
 import lombok.Data;
 

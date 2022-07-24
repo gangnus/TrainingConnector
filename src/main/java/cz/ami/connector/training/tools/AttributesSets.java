@@ -1,15 +1,12 @@
-package cz.ami.connector.daktela.tools;
+package cz.ami.connector.training.tools;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import cz.ami.connector.daktela.TrainingConnector;
-import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.Attribute;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class is a collection of functions for sets of Attributes and DeltaAttributes

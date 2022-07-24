@@ -1,6 +1,9 @@
-package cz.ami.connector.daktela;
+package cz.ami.connector.training;
 
-import cz.ami.connector.daktela.model.User;
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
+import cz.ami.connector.training.model.User;
+import cz.ami.connector.training.tools.LogMessages;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.spi.operations.SearchOp;
 
@@ -8,14 +11,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ConnectorSchema {
-
+    private static final Trace LOG = TraceManager.getTrace(ConnectorSchema.class);
     public static final ObjectClass CLASS_USER = new ObjectClass("user");
 
     public static final String ATTR_PASSWORD = "password";
     public static final String ATTR_FULLNAME = "fullname";
 
     public static Schema getSchema() {
-
+        LOG.info(">>> " + LogMessages.TRAINING_CONNECTOR_GETTING_SCHEMA);
         final SchemaBuilder schemaBuilder = new SchemaBuilder(TrainingConnector.class);
 
         // USER
@@ -26,6 +29,7 @@ public class ConnectorSchema {
 
         schemaBuilder.defineObjectClass(CLASS_USER.getObjectClassValue(), userAttributes);
         schemaBuilder.defineOperationOption(OperationOptionInfoBuilder.buildPageSize(), SearchOp.class);
+        LOG.info("<<< " + LogMessages.TRAINING_CONNECTOR_GETTING_SCHEMA);
         return schemaBuilder.build();
 	}
 
