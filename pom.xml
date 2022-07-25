@@ -31,7 +31,7 @@
         <connectorClass>TrainingConnector</connectorClass>
         <bundle.name>${project.groupId}.${project.artifactId}</bundle.name>
         <bundle.version>${project.version}</bundle.version>
-        <project.source.version>17</project.source.version>
+        <project.source.version>11</project.source.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <connId.version>1.5.0.18</connId.version>
         <midpoint.version>4.4</midpoint.version>

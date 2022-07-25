@@ -65,7 +65,6 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
 
     @Override
     public Schema schema() {
-
         return ConnectorSchema.getSchema();
 
     }

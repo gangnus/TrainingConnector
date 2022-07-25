@@ -4,6 +4,9 @@ import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import cz.ami.connector.training.model.User;
 import cz.ami.connector.training.tools.LogMessages;
+import cz.ami.connector.training.tools.ProblemsAndErrors;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.spi.operations.SearchOp;
 
@@ -19,18 +22,29 @@ public class ConnectorSchema {
 
     public static Schema getSchema() {
         LOG.info(">>> " + LogMessages.TRAINING_CONNECTOR_GETTING_SCHEMA);
-        final SchemaBuilder schemaBuilder = new SchemaBuilder(TrainingConnector.class);
 
-        // USER
-        Set<AttributeInfo> userAttributes = new HashSet<>();
-        userAttributes.add(AttributeInfoBuilder.define(Uid.NAME).setCreateable(false).setUpdateable(false).setRequired(true).build());
-        userAttributes.add(AttributeInfoBuilder.define(Name.NAME).setRequired(true).build());
-        userAttributes.add(AttributeInfoBuilder.define(ATTR_FULLNAME).build());
+        try {
+            final SchemaBuilder schemaBuilder = new SchemaBuilder(TrainingConnector.class);
 
-        schemaBuilder.defineObjectClass(CLASS_USER.getObjectClassValue(), userAttributes);
-        schemaBuilder.defineOperationOption(OperationOptionInfoBuilder.buildPageSize(), SearchOp.class);
-        LOG.info("<<< " + LogMessages.TRAINING_CONNECTOR_GETTING_SCHEMA);
-        return schemaBuilder.build();
+            // USER
+            Set<AttributeInfo> userAttributes = new HashSet<>();
+            userAttributes.add(AttributeInfoBuilder.define(Uid.NAME).setCreateable(true).setUpdateable(false).setRequired(true).build());
+            userAttributes.add(AttributeInfoBuilder.define(Name.NAME).setCreateable(true).setUpdateable(false).setRequired(true).build());
+            userAttributes.add(AttributeInfoBuilder.define(ATTR_FULLNAME).setCreateable(true).setUpdateable(true).setRequired(false).build());
+            userAttributes.add(AttributeInfoBuilder.define(ATTR_PASSWORD).setCreateable(true).setUpdateable(true).setRequired(false).build());
+
+            schemaBuilder.defineObjectClass(CLASS_USER.getObjectClassValue(), userAttributes);
+            schemaBuilder.defineOperationOption(OperationOptionInfoBuilder.buildPageSize(), SearchOp.class);
+            Schema schema = schemaBuilder.build();
+            LOG.error("schema = " + schema.toString());
+            LOG.info("<<< " + LogMessages.TRAINING_CONNECTOR_GETTING_SCHEMA);
+            return schema;
+        } catch (Exception e) {
+            LOG.error("-----------------------------getSchema failed-------------------------------");
+            LOG.error(ExceptionUtils.getStackTrace(e));
+            ProblemsAndErrors.uncheckedExcReaction(LOG, "getSchema failed");
+            return null;
+        }
 	}
 
     public static ConnectorObject createConnectorObject(User user) {
