@@ -133,9 +133,9 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
         }
         Uid uid = null;
         try {
-            uid = getUidFromAttributesSet(set);
+            uid = getUidFromUidOrNameFromAttributesSet(set);
         } catch (Exception e) {
-            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.ATTEMPT_TO_CREATE_A_USER_WITHOUT_UID);
+            ProblemsAndErrors.uncheckedExcReaction(LOG, LogMessages.ATTEMPT_TO_CREATE_A_USER_WITHOUT_UID_AND_NAME);
         }
 
         // use the set
@@ -159,7 +159,7 @@ public class TrainingConnector implements Connector, CreateOp, DeleteOp, TestOp,
         Users.add(user);
     }
 
-    Uid getUidFromAttributesSet(Set<Attribute> set) throws Exception {
+    Uid getUidFromUidOrNameFromAttributesSet(Set<Attribute> set) throws Exception {
         String uidFromSet = AttributesSets.extractSingle(set,Uid.NAME);
         String nameFromSet = AttributesSets.extractSingle(set,Name.NAME);
         if (StringUtils.isBlank(uidFromSet) && StringUtils.isBlank(nameFromSet)){

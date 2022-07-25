@@ -11,7 +11,7 @@ public class LogMessages {
     public static final String CREATION_USER_FOR_TRAINING_CONNECTOR = "Creation User for Training Connector";
     public static final String READING_OF_ONE_USER_FAILED = "Reading of one user failed.";
     public static final String ATTRIBUTES_NOT_PROVIDED_OR_EMPTY = "attributes not provided or empty";
-    public static final String ATTEMPT_TO_CREATE_A_USER_WITHOUT_UID = "Attempt to create a user without uid";
+    public static final String ATTEMPT_TO_CREATE_A_USER_WITHOUT_UID_AND_NAME = "Attempt to create a user without uid and name";
     public static final String USER_CREATION_FAILED = "User creation failed";
     public static final String NO_UIDS_OR_NAMES_IN_THE_SET = "No uids or names in the set.";
     public static final String CONTRADICTIONS_IN_UIDS_AND_OR_NAMES = "Contradictions in uids and/or names";
